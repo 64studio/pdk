@@ -28,7 +28,7 @@ import picax.config
 # controlled by module parameters at some point.
 
 cd_size_multiplier = 1048576
-mkisofs_std_args = "-R -J -T -joliet-long"
+mkisofs_std_args = "-R -J -T -joliet-long -quiet"
 
 options = { "media-image-size": {"config-key": "image_size",
                                  "parameter": True,
