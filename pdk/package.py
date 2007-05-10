@@ -210,6 +210,10 @@ class DebianVersion(object):
     def __cmp__(self, other):
         if isinstance(other, basestring):
             other = DebianVersion(other)
+        if re.match('^' + other.version_string + '\+b[1-9]', self.version_string):
+            return 0
+        if re.match('^' + self.version_string + '\+b[1-9]', other.version_string):
+            return 0
         from smart.backends.deb.debver import vercmp as smart_vercmp
         return cmp(self.__class__, other.__class__) or \
                smart_vercmp(self.version_string, other.version_string)

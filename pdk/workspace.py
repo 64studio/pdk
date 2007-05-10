@@ -795,11 +795,30 @@ def find_upgrade(cache, stanza, iter_world_items):
             parent_package = package
             break
 
-    candidate_packages = [ i.package for i in iter_world_items ]
+    channels = current_workspace().world_data.world_dict
+    candidate_items = [ (int(channels[i.section_name]['priority']), i.package) for i in iter_world_items ]
+    candidate_packages = []
+
+    # The upgrade policy is the same as the APT preferences system
+    #
+    # 1) Never downgrade unless the priority of an available version exceeds 1000
+    # 2) Install the highest priority version.
+    # 3) If two or more versions have the same priority, install the higher
+
+    if len(candidate_items) > 1:
+        priority = max(candidate_items)[0]
+        for candidate_item in candidate_items:
+            if candidate_item[0] == priority:
+                candidate_packages.append(candidate_item[1])
+             
     candidate_packages.sort(cmp_packages)
     for candidate in candidate_packages:
         if stanza.evaluate_condition(candidate) and \
-            candidate.version > parent_package.version:
+            (\
+             (priority <= 1000 and candidate.version > parent_package.version) or \
+             (priority >  1000 and candidate.version != parent_package.version) or \
+             (candidate.version == parent_package.version and candidate.arch != parent_package.arch) \
+            ):
             return candidate
     return None
 
@@ -1025,6 +1044,7 @@ class _Workspace(object):
         self.channel_dir = pjoin(self.config_dir, 'channels')
         self.outside_world_store = pjoin(self.config_dir,
                                          'outside-world.cache')
+        self.world_data = WorldData.load_from_stored(self.channel_data_source)
 
     def __create_cache(self):
         """The cache for this workspace."""
@@ -1038,8 +1058,7 @@ class _Workspace(object):
 
     def __create_world(self):
         """Get the outside world object for this workspace."""
-        world_data = WorldData.load_from_stored(self.channel_data_source)
-        factory = OutsideWorldFactory(world_data, self.channel_dir,
+        factory = OutsideWorldFactory(self.world_data, self.channel_dir,
                                       self.outside_world_store)
         world = factory.create()
         return world
