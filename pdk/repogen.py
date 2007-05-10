@@ -459,6 +459,7 @@ class DebianPoolRepo(object):
                 writer.write(handle, section, arch)
         release_path = pjoin(self.repo_dir, self.dist, 'Release')
         writer.write_outer(LazyWriter(release_path))
+        writer.sign_outer(LazyWriter(release_path + '.gpg')) 
 
 
 class DebianDirectPoolRepo(DebianPoolRepo):
@@ -547,6 +548,7 @@ class DebianReleaseWriter(object):
         self.release_time = contents['apt-deb', 'date']
         self.description = contents['apt-deb', 'description']
         self.search_path = str(search_path)
+        self.key = contents['apt-deb', 'key']
 
         self.arches = list(raw_arches)
         self.arches.sort()
@@ -599,6 +601,14 @@ class DebianReleaseWriter(object):
         print >> handle, 'Description: %s' % self.description
         handle.write(sums)
 
+    def sign_outer(self, handle):
+        """Sign the toplevel Release file."""
+        if not self.key:
+            return
+        sign_handle = os.popen('gpg --default-key %s --sign -ba -o - %s'
+                              % (str(self.key), handle.name[0:-4]))
+        sign = sign_handle.read()
+        handle.write(sign)
 
 def get_apt_component_name(ref):
     """Extract an apt-component name from a component reference"""
@@ -639,7 +649,8 @@ class Compiler:
                      ('apt-deb', 'codename'): default_apt_suite_name,
                      ('apt-deb', 'date'): default_date,
                      ('apt-deb', 'description'): default_apt_suite_name,
-                     ('apt-deb', 'split-apt-components'): ''}
+                     ('apt-deb', 'split-apt-components'): '',
+                     ('apt-deb', 'key'): None}
         contents.update(provided_contents)
 
         suite = contents['apt-deb', 'suite']
