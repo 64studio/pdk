@@ -55,6 +55,7 @@ from smart.const import ALWAYS, NEVER, INSTALL, REMOVE
 from smart.control import ChangeSet
 from smart.cache import Cache as SmartCache
 from smart.transaction import Failed as TransactionFailed
+from pdk.package import Package
   
 from pprint import pprint as pp
 from optparse import OptionParser
@@ -1007,6 +1008,39 @@ def abstract(args):
     
 abstract = make_invokable(abstract)
 
+def complete(args):
+    """usage: pdk complete COMPONENTS
+
+    Shows differences between architectures
+    """
+    workspace = current_workspace()
+    get_desc = workspace.get_component_descriptor
+    descriptor = workspace.get_component_descriptor(args.get_reoriented_files(workspace)[0])
+    os.chdir(workspace.location)
+    
+    cache = workspace.world.get_backed_cache(workspace.cache)
+    component = descriptor.load(cache)
+    iterator_fn = component.iter_raw_ordered_contents
+    refs = iterator_fn((Package,), True, None, None)
+    i = 0
+    pkgs = {}
+    archs = ['i386', 'amd64']
+    for index, ref in enumerate(refs):
+        if ref.arch == 'all':
+            continue
+        if ref.type == 'dsc':
+            continue
+        if pkgs.has_key(ref.name):
+            pkgs[ref.name].append(ref.arch)
+        else:
+            pkgs[ref.name] = [ref.arch]
+    for arch in archs:
+        for pkg in pkgs.keys():
+            if not arch in pkgs[pkg]:
+                print pkg + " has no " + arch
+
+complete = make_invokable(complete, 'machine-readable', 'no-report',
+                         'dry-run', 'channels', 'show-unchanged')
 
 def upgrade(args):
     """\\fB%prog\\fP [\\fIOPTIONS\\fP] \\fICOMPONENTS\\fP
