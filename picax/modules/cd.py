@@ -94,8 +94,12 @@ def create_image(index, boot_image_path):
 
     label_options = ""
     if conf["media_options"].has_key("label"):
-        label_options = "-V '%s %d'" % (conf["media_options"]["label"],
-                                        index)
+        if conf['num_parts'] == 0:
+            cd_index = ""
+        else:
+            cd_index = index
+        label_options = "-V '%s %s'" % (conf["media_options"]["label"],
+                                        cd_index)
 
     if os.system("mkisofs -o %s/img-bin%d.iso %s %s %s %s" \
                  % (conf["dest_path"], index, mkisofs_std_args,

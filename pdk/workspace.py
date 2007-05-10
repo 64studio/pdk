@@ -325,8 +325,16 @@ Generate media for a linux product.
     desc = ws.get_component_descriptor(product_file)
     comp = desc.load(ws.cache)
     picax.config.handle_args(component = comp)
-
     picax_conf = picax.config.get_config()
+
+    if args.opts.arch:
+        picax_conf['arch'] = args.opts.arch
+        picax_conf['installer_options']['cdrom_path'] = args.opts.arch
+
+    if args.opts.label:
+        picax_conf['media_options']['label'] = args.opts.label
+        picax_conf['cd_label'] = args.opts.label
+
     picax.apt.init()
     (package_list, source_list) = \
         picax.package.get_all_distro_packages()
@@ -344,7 +352,7 @@ Generate media for a linux product.
     picax.installer.post_install()
     picax.media.create_media()
 
-mediagen = make_invokable(mediagen)
+mediagen = make_invokable(mediagen, 'arch', 'label')
 
 def add(args):
     """\\fB%prog\\fP \\fIFILES\\fP

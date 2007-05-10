@@ -129,9 +129,13 @@ default_order_funcs = [ _order_udebs, _order_explicit, _order_debootstrap,
 def order(packages):
     """Apply order functions and return the resulting order."""
 
-    pkg_order = []
-    for order_func in default_order_funcs:
-        pkg_order = order_func(packages, pkg_order)
-    return pkg_order
+    conf = picax.config.get_config()
+    if conf['no_order']:
+        return packages
+    else:
+        pkg_order = []
+        for order_func in default_order_funcs:
+            pkg_order = order_func(packages, pkg_order)
+        return pkg_order
 
 # vim:set ai et sw=4 ts=4 tw=75:

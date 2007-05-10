@@ -51,6 +51,14 @@ main_options = { "help":
                  { "config-key": "version",
                    "parameter": False,
                    "doc": ("Show the software version",) },
+                 "no-order":
+                 { "config-key": "no_order",
+                   "parameter": False,
+                   "doc": ("Don't order the package list",) },
+                 "no-split":
+                 { "config-key": "no_split",
+                   "parameter": False,
+                   "doc": ("Don't split the packages list",) },
                  "order":
                  { "config-key": "order_file",
                    "parameter": True,

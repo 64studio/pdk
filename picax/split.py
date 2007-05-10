@@ -83,6 +83,14 @@ def split(binary_order, binary_list, source_list, first_part_size = 0):
 
     conf = picax.config.get_config()
 
+    if conf['no_split']:
+        if conf["source"] == "none":
+            return [binary_list]
+        elif conf["separate"] == "none":
+            return [binary_list, source_list]
+        elif conf["mixed"] == "none":
+            return [binary_list +  source_list]
+        
     part_size = conf["part_size"]
     if part_size == 0:
         total_binary_size = sum([x["Package-Size"] for x in binary_list])

@@ -138,6 +138,18 @@ class CommandSpec(object):
                    type = "string",
                    help = "A channel name.")
 
+            elif item == 'arch':
+                op("-a", "--arch",
+                   dest = "arch",
+                   type = "string",
+                   help = "Architecture")
+
+            elif item == 'label':
+                op("-l", "--label",
+                   dest = "label",
+                   type = "string",
+                   help = "Media label")
+
             elif item == 'machine-readable':
                 op("-m", "--machine-readable",
                    action = "store_true",

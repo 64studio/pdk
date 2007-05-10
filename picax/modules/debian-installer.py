@@ -34,6 +34,16 @@ options = { "inst-base-url": { "config-key": "base-url",
                                "parameter": True },
             "inst-cdrom-path": { "config-key": "cdrom_path",
                                  "parameter": True },
+            "inst-preseed-file": { "config-key": "preseed_file",
+                                 "parameter": True },
+            "inst-debconf-priority": { "config-key": "debconf_priority",
+                                 "parameter": True },
+            "inst-suite": { "config-key": "suite",
+                                 "parameter": True },
+            "inst-locale": { "config-key": "locale",
+                                 "parameter": True },
+            "inst-keymap": { "config-key": "keymap",
+                                 "parameter": True },
             "inst-floppy-path": { "config-key": "floppy_path",
                                   "parameter": True },
             "inst-template-path": { "config-key": "template_path",
@@ -42,6 +52,10 @@ options = { "inst-base-url": { "config-key": "base-url",
                                     "doc":
                                     ("Directory tree for first CD files",)
                                     },
+            "inst-base-include-list": { "config-key": "base_include_list",
+                                        "parameter": True },
+            "inst-base-exclude-list": { "config-key": "base_exclude_list",
+                                        "parameter": True },
             "inst-udeb-include-list": { "config-key": "udeb_include_list",
                                         "parameter": True },
             "inst-udeb-exclude-list": { "config-key": "udeb_exclude_list",
@@ -153,6 +167,16 @@ def _download_di_base(base_uri, dest_path, file_list):
         input_file.close()
         output_file.close()
 
+def _download_preseed(preseed_uri, cd_path):
+    if not os.path.isdir(cd_path):
+        os.makedirs(cd_path)
+
+    input_file = urllib2.urlopen(preseed_uri)
+    output_file = open(cd_path + "/.disk/preseed", "w")
+    output_file.write(input_file.read())
+    input_file.close()
+    output_file.close()
+
 def _install_common(cd_path):
     log.info("Installing debian-installer common files")
 
@@ -170,10 +194,15 @@ def _install_common(cd_path):
     compfile = open(cd_path + "/.disk/base_installable", "w")
     compfile.close()
 
-    for (key, fn) in (("udeb_include_list", "udeb_include"),
-                      ("udeb_exclude_list", "udeb_exclude")):
+    for (key, fn) in (("base_include_list", "base_include"),
+                      ("base_exclude_list", "base_exclude"),
+                      ("udeb_include_list", "udeb_include"),
+                      ("udeb_include_list", "udeb_include")):
         if inst_conf.has_key(key) and os.path.exists(inst_conf[key]):
             shutil.copyfile(inst_conf[key], "%s/.disk/%s" % (cd_path, fn))
+
+    if inst_conf.has_key("preseed_file"):
+        _download_preseed(inst_conf["preseed_file"], cd_path)    
 
 def _install_i386(cd_path):
     boot_image_list = ["initrd.gz", "vmlinuz",
@@ -214,20 +243,23 @@ def _install_i386(cd_path):
                 isohelp.extract(tarmember, cd_path + "/isolinux")
         isohelp.close()
 
-        if not os.path.exists(cd_path + "/isolinux/isolinux.cfg"):
-            isocfg = open(cd_path + "/isolinux/isolinux.cfg", "w")
-            isocfg.write("""DEFAULT /install/vmlinuz
-APPEND vga=normal initrd=/install/initrd.gz ramdisk_size=10240 root=/dev/rd/0 init=/linuxrc devfs=mount,dall rw
-LABEL linux
-  kernel /install/vmlinuz
-LABEL cdrom
-  kernel /install/vmlinuz
-LABEL expert
-  kernel /install/vmlinuz
-  append DEBCONF_PRIORITY=low vga=normal initrd=/install/initrd.gz ramdisk_size=10240 root=/dev/rd/0 init=/linuxrc devfs=mount,dall rw
+        extra_append = ''
+
+        if inst_conf.has_key("preseed_file"):
+            extra_append += 'preseed/file=/cdrom/.disk/preseed '
+        if inst_conf.has_key("debconf_priority"):
+            extra_append += 'debconf/priority=%s ' % inst_conf["debconf_priority"]
+        if inst_conf.has_key("suite"):
+            extra_append += 'mirror/suite=%s ' % inst_conf["suite"]
+        if inst_conf.has_key("locale"):
+            extra_append += 'debian-installer/locale=%s ' % inst_conf["locale"]
+        if inst_conf.has_key("keymap"):
+            extra_append += 'console-keymaps-at/keymap=%s ' % inst_conf["keymap"]
+
+        isocfg = open(cd_path + "/isolinux/isolinux.cfg", "w")
+        isocfg.write("""
 DISPLAY boot.txt
-TIMEOUT 0
-PROMPT 1
+
 F1 f1.txt
 F2 f2.txt
 F3 f3.txt
@@ -238,8 +270,28 @@ F7 f7.txt
 F8 f8.txt
 F9 f9.txt
 F0 f10.txt
-""")
-            isocfg.close()
+
+DEFAULT install
+
+LABEL install
+	kernel /install/vmlinuz
+	append vga=normal initrd=/install/initrd.gz ramdisk_size=16000 root=/dev/ram rw %s  --
+LABEL linux
+	kernel /install/vmlinuz
+	append vga=normal initrd=/install/initrd.gz ramdisk_size=16000 root=/dev/ram rw %s  --
+
+LABEL expert
+	kernel /install/vmlinuz
+	append DEBCONF_PRIORITY=low vga=normal initrd=/install/initrd.gz ramdisk_size=16000 root=/dev/ram rw %s  --
+
+LABEL rescue
+	kernel /install/vmlinuz
+	append vga=normal initrd=/install/initrd.gz ramdisk_size=16000 root=/dev/ram rw  rescue/enable=true --
+
+PROMPT 1
+TIMEOUT 0
+""" % (extra_append, extra_append, extra_append))
+        isocfg.close()
 
     finally:
         shutil.rmtree(dl_path)
@@ -272,10 +324,16 @@ def post_install(cd_path):
     """Do anything needed by d-i after the packages are packed to the
     media."""
 
+    inst_conf = conf["installer_options"]
+
     dist_path = cd_path + "/dists/"
     distro = conf["repository_list"][0][0]
 
-    for link in ("frozen", "testing", "stable", "unstable"):
+    links = ["frozen", "testing", "stable", "unstable"]
+    if inst_conf.has_key("suite"):
+            links.append(inst_conf["suite"])
+
+    for link in tuple(links):
         if not os.path.exists(dist_path + link):
             os.symlink(distro, dist_path + link)
 
