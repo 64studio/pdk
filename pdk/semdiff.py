@@ -224,10 +224,10 @@ def print_man(ref, data):
         if collater[field]:
             print >> output, '.SH', field.upper()
             print >> output, '.TS H'
-            print >> output, 'lb lb lb lb lb.'
-            print >> output, 'format\tname\told\tnew\tarch'
+            print >> output, 'lb lb lb lb lb lb.'
+            print >> output, 'format\tname\told\tnew\tarch\treference'
             print >> output, '.T&'
-            print >> output, 'l l l l.'
+            print >> output, 'l l l l l l.'
             for item in collater[field]:
                 fields = get_package_presence_fields(item[0], ref)
                 print >> output, '\t'.join(fields)
@@ -285,6 +285,7 @@ def get_package_presence_fields(package, ref):
     return (package.type,
             package.name,
             package.version.full_version,
+            "-",
             package.arch,
             ref)
 
