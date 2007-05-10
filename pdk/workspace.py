@@ -47,6 +47,20 @@ from pdk.progress import ConsoleMassProgress, NullMassProgress, \
      SizeCallbackAdapter
 from pdk.command_base import make_invokable
 
+from commands import getoutput
+from cStringIO import StringIO
+from smart.transaction import Transaction, PolicyInstall, PolicyUpgrade, ChangeSetSplitter
+from smart import init, hooks, sysconf, iface
+from smart.const import ALWAYS, NEVER, INSTALL, REMOVE
+from smart.control import ChangeSet
+from smart.cache import Cache as SmartCache
+from smart.transaction import Failed as TransactionFailed
+  
+from pprint import pprint as pp
+from optparse import OptionParser
+  
+from pdk.yaxml import parse_yaxml_file
+
 # current schema level for this pdk build
 schema_target = 6
 
@@ -699,6 +713,7 @@ def run_resolve(args, find_package, assert_resolved, abstract_constraint):
     abstract_constraint -
                    whether stanzas must be resolved or unresolved.
     '''
+
     workspace = current_workspace()
     extended_cache = workspace.world.get_backed_cache(workspace.cache)
     get_desc = workspace.get_component_descriptor
@@ -787,6 +802,164 @@ def find_upgrade(cache, stanza, iter_world_items):
             candidate.version > parent_package.version:
             return candidate
     return None
+
+def run_closure(component_names, arch):
+
+    control = init(datadir = 'etc')
+    
+    for component_name in component_names:
+        sysconf.set(('channels', component_name),
+                      { 'path': component_name,
+                       'disabled': False,
+                       'manual': False,
+                       'name': component_name,
+                       'priority': 1000,
+                       'removable': False,
+                       'type': 'pdk-deb'})
+
+    ws = current_workspace()
+    channels = parse_yaxml_file(ws.channel_data_source)
+    
+    for channel in channels.keys():
+        if not channels[channel]['type'] == 'apt-deb':
+            continue
+        url = channels[channel]['path']
+        suite = channels[channel]['dist']
+        components = channels[channel]['components']
+        if channels[channel].has_key('priority'):
+            priority = int(channels[channel]['priority'])
+        else:
+            priority = 10
+        sysconf.set(('channels', channel),
+                    { 'baseurl': url,
+                      'components': components,
+                      'disabled': False,
+                      'distribution': suite,
+                      'fingerprint': '',
+                      'manual': False,
+                      'name': channel,
+                      'priority': priority,
+                      'removable': False,
+                      'type': 'apt-deb'})
+
+    sysconf.set('deb-arch', arch)
+
+    control.reloadChannels(caching = ALWAYS)
+
+    cache = control.getCache()
+    packages = []
+
+    for loader in cache._loaders:
+        if loader.getChannel().getType() == 'pdk-deb':
+            packages += loader._packages
+    
+    class CommitFaker(object):
+        def __init__(self):
+            self.clusters = []
+            self.already_installed = SmartCache()
+
+        def fakeCommitChangeSet(self, changeset, **dummy):
+            media_group = []
+            for package, op in changeset.iteritems():
+                if op is INSTALL:
+                    media_group.append(package)
+                    package.installed = True
+                elif op is REMOVE:
+                    pass
+
+            self.clusters.append(media_group)
+
+        def attach(self, control):
+            control.commitChangeSet = self.fakeCommitChangeSet
+
+    faker = CommitFaker()
+    faker.attach(control)
+
+    total = len(packages)
+    prog = iface.getProgress(cache)
+    prog.setTopic("Solving...")
+    prog.set(0, total)
+    prog.show()
+
+    errors = []
+    for count, package in enumerate(packages):
+        # XXX: limit the packages for "deb/rpm-bootstrap" here.
+
+        if package.installed:
+            continue
+        prog.set(count, total)
+        prog.show()
+        trans = Transaction(cache, PolicyInstall)
+        trans.enqueue(package, INSTALL)
+        try:
+            trans.run()
+        except TransactionFailed, error:
+            errors.append(str(package.loaders.values()[0]) + ' ... ' + str(error))
+        control.commitTransactionStepped(trans, confirm=False)
+
+    prog.setDone()
+    prog.show()
+    prog.stop()
+
+    missing = 0
+    contents=''
+
+    for cluster_index, cluster in enumerate(faker.clusters):
+        cluster.sort()
+        count = len(cluster)
+        for package in cluster:
+            need=1
+            for loader in package.loaders:
+                if loader.getChannel().getType() == 'pdk-deb':
+                    need=0
+            if need == 1:
+                # scary assumption
+                loader = package.loaders.keys()[0]
+                missing += 1
+
+                info = loader.getInfo(package)
+
+                # less scary assumption
+                url = info.getURLs()[0]
+                md5sum = info.getMD5(url)
+                name='<name>%s</name>' % (package.name)
+                version='<version>%s</version>' % (package.version)
+                arch="<arch>%s</arch>" % (info._dict['architecture'])
+                ref='<deb ref="md5:%s">%s%s%s</deb>' % (md5sum,name,version,arch)
+                
+                contents = contents + '<deb>%s%s</deb>' % (name,ref)
+
+    if len(errors) > 0:
+        print "Unable to calculate closure"
+        pp(errors)
+    elif missing > 0:
+        header='<?xml version="1.0" encoding="utf-8"?>'
+        component='<id>closure</id><contents>%s</contents>' % (contents)
+        body='<component>%s</component>' % (component)
+        closure = ComponentDescriptor("closure.xml",StringIO(header + body))
+        closure.write()
+        print "Wrote %d missing packages into closure.xml" % missing
+    else:
+        print "The components are dependency closed"
+        
+def closure(args):
+    """usage: pdk closure COMPONENTS
+
+    Calculate dependency closure of abstract package references.
+    """
+    workspace = current_workspace()
+    get_desc = workspace.get_component_descriptor
+    component_names = args.get_reoriented_files(workspace)
+    os.chdir(workspace.location)
+    if args.opts.arch:
+        arch = args.opts.arch
+    else:
+        arch = getoutput('/usr/bin/dpkg --print-architecture')
+    run_closure(component_names, arch)
+    
+
+closure = make_invokable(closure, 'arch', 'machine-readable', 'no-report',
+                         'dry-run', 'channels', 'show-unchanged')
 
 def upgrade(args):
     """\\fB%prog\\fP [\\fIOPTIONS\\fP] \\fICOMPONENTS\\fP

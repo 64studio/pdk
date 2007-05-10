@@ -288,10 +288,11 @@ class AptDebSection(object):
     be treated as Packages or Sources.
     '''
 
-    def __init__(self, full_path, channel_file, strategy):
+    def __init__(self, full_path, channel_file, strategy, has_release):
         self.full_path = full_path
         self.channel_file = channel_file
         self.strategy = strategy
+        self.has_release = has_release
 
     def get_identity(self):
         '''Return an identity tuple for this object.'''
@@ -300,6 +301,12 @@ class AptDebSection(object):
     def update(self):
         '''Grab the remote file and store it locally.'''
         get_remote_file(self.full_path, self.channel_file, True)
+        shell_command('gunzip -c %s > % s' % (self.channel_file ,self.channel_file[0:-3]))
+        if self.has_release:
+             full_path = '/'.join(self.full_path.split('/')[0:-1]) + '/Release'
+             release_file = '_'.join(self.channel_file.split('_')[0:-1]) + '_Release'             
+             get_remote_file(full_path, release_file, True)
+             
 
     def iter_package_info(self):
         '''Iterate over ghost_package, blob_id, locator for this section.
@@ -322,7 +329,7 @@ class AptDebSection(object):
 
     def iter_apt_tags(self):
         '''Iterate over apt tag section objects in self.channel_file.'''
-        handle = os.popen('gunzip <%s' % self.channel_file)
+        handle = open(self.channel_file[0:-3])
         apt_iterator = apt_pkg.ParseTagFile(handle)
         while apt_iterator.Step():
             yield apt_iterator.Section
@@ -546,9 +553,9 @@ class OutsideWorldFactory(object):
 
         return OutsideWorld(sections, self.store_file)
 
-    def get_channel_file(self, path):
+    def get_channel_file(self, channel_name, path):
         """Get the full path to the file representing the given path."""
-        return os.path.join(self.channel_dir, quote(path))
+        return os.path.join(self.channel_dir,'%s%%%%%s' % (channel_name,path.replace('/','_')))
 
     def iter_sections(self, channel_name, data_dict):
         """Create sections for the given channel name and dict."""
@@ -586,14 +593,17 @@ class OutsideWorldFactory(object):
                                 continue
                             arch_part = 'source'
                             filename = 'Sources.gz'
+                            has_release = True
                             strategy = AptDebSourceStrategy(path)
                         else:
                             arch_part = 'binary-%s' % arch
                             filename = 'Packages.gz'
                             if '/debian-installer' in component:
                                 strategy = AptUDebBinaryStrategy(path)
+                                has_release = False
                             else:
                                 strategy = AptDebBinaryStrategy(path)
+                                has_release = True
 
                         if nodists:
                             arch_part = ''
@@ -605,14 +615,14 @@ class OutsideWorldFactory(object):
                                  arch_part, filename]
                         parts = [ p for p in parts if p ]
                         full_path = '/'.join(parts)
-                        channel_file = self.get_channel_file(full_path)
+                        channel_file = self.get_channel_file(channel_name,full_path)
                         yield AptDebSection(full_path, channel_file,
-                                            strategy)
+                                            strategy, has_release)
             elif type_value == 'dir':
                 yield DirectorySection(path)
             elif type_value == 'source':
                 yield RemoteWorkspaceSection(path,
-                                             self.get_channel_file(path))
+                                             self.get_channel_file(channel_name,full_path))
             elif type_value == 'rpm-md':
                 yield RpmMdSection(channel_name, path,
                                    self.get_channel_file)
@@ -661,6 +671,15 @@ class OutsideWorld(object):
 
     def fetch_world_data(self):
         '''Update all remote source and channel data.'''
+        for channel in self.sections.keys():
+            if isinstance(self.sections[channel][0], AptDebSection):
+                p = re.compile('.*/dists/[^/]*/')
+                m = p.match(self.sections[channel][0].full_path)
+                remote_file = m.group() + 'Release'
+                p = re.compile('.*%%.*dists_[^_]*_')
+                m = p.match(self.sections[channel][0].channel_file)
+                local_file = m.group() + 'Release'
+                get_remote_file(remote_file, local_file, True)
         for dummy, section in self.iter_sections():
             section.update()
         self.index_world_data()
