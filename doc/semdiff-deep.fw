@@ -1,0 +1,162 @@
+@! $Progeny$
+@!
+@!   Copyright 2006 Progeny Linux Systems, Inc.
+@!
+@!   This file is part of PDK.
+@!
+@!   PDK is free software; you can redistribute it and/or modify it
+@!   under the terms of the GNU General Public License as published by
+@!   the Free Software Foundation; either version 2 of the License, or
+@!   (at your option) any later version.
+@!
+@!   PDK is distributed in the hope that it will be useful, but WITHOUT
+@!   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+@!   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+@!   License for more details.
+@!
+@!   You should have received a copy of the GNU General Public License
+@!   along with PDK; if not, write to the Free Software Foundation,
+@!   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+@p indentation = none
+
+@A@<Deep Semdiff@>
+
+In this test we run semdiff in situations where components including other
+components matters.
+
+Furthermore we test to make sure that running semdiff against historical
+components correctly includes the proper historical version of a component?
+
+@t table_of_contents
+
+@B
+
+Component a includes component b, and only component b changes. Semdiff
+should be able to detect this.
+
+@$@<Verify Semdiff Deep Works@>@M==@{
+
+mkdir before after
+
+cat >before/a.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <component>before/b.xml</component>
+  </contents>
+</component>
+EOF
+
+cat >before/b.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <dsc>emacs-defaults</dsc>
+  </contents>
+</component>
+EOF
+
+cat >after/a.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <component>after/b.xml</component>
+  </contents>
+</component>
+EOF
+
+cat >after/b.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <dsc>emacs-defaults</dsc>
+  </contents>
+</component>
+EOF
+
+pdk resolve after/b.xml
+pdk semdiff -m before/a.xml after/a.xml | LANG=C sort >2file.diff
+
+diff -u - 2file.diff <<EOF
+add|deb|emacs-defaults|1.1|all|after/a.xml
+add|dsc|emacs-defaults|1.1|all|after/a.xml
+EOF
+
+@}
+
+@$@<Verify Semdiff Deep Works in VC@>@M==@{
+
+mkdir vc
+
+cat >vc/a.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <component>vc/b.xml</component>
+  </contents>
+</component>
+EOF
+
+cat >vc/b.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <dsc>emacs-defaults</dsc>
+  </contents>
+</component>
+EOF
+
+pdk commit -m 'before' vc/a.xml vc/b.xml
+
+cat >vc/b.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <dsc>emacs-defaults</dsc>
+  </contents>
+</component>
+EOF
+
+pdk resolve vc/b.xml
+pdk semdiff -m vc/a.xml | LANG=C sort >2file.diff
+
+diff -u - 2file.diff <<EOF
+add|deb|emacs-defaults|1.1|all|vc/a.xml
+add|dsc|emacs-defaults|1.1|all|vc/a.xml
+EOF
+
+@}
+
+@B@<Test Outline@>
+
+This is the macro wrapper for the test.
+
+@O@<atest/semdiff-deep.fw.sh@>==@{
+pdk workspace create semdiff-deep
+pushd semdiff-deep
+
+mkdir channel-1
+cp \
+    ${PACKAGES}/emacs-defaults_1.1_all.deb \
+    ${PACKAGES}/emacs-defaults_1.1.dsc \
+    ${PACKAGES}/emacs-defaults_1.1.tar.gz \
+    channel-1
+
+cat >etc/channels.xml <<EOF
+<?xml version="1.0"?>
+<channels>
+  <channel-1>
+    <type>dir</type>
+    <path>channel-1</path>
+  </channel-1>
+</channels>
+EOF
+
+pdk channel update
+
+@<Verify Semdiff Deep Works in VC@>
+@<Verify Semdiff Deep Works@>
+popd
+@}
+@! vim:set ai et sw=4 ts=4 tw=75:

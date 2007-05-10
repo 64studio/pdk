@@ -1,0 +1,80 @@
+@! $Progeny$
+@!
+@!   Copyright 2006 Progeny Linux Systems, Inc.
+@!
+@!   This file is part of PDK.
+@!
+@!   PDK is free software; you can redistribute it and/or modify it
+@!   under the terms of the GNU General Public License as published by
+@!   the Free Software Foundation; either version 2 of the License, or
+@!   (at your option) any later version.
+@!
+@!   PDK is distributed in the hope that it will be useful, but WITHOUT
+@!   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+@!   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+@!   License for more details.
+@!
+@!   You should have received a copy of the GNU General Public License
+@!   along with PDK; if not, write to the Free Software Foundation,
+@!   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+@p indentation = none
+
+@A@<Resolving nosrc rpms@>
+
+In this test we take a nosrc rpm, then run it through pdk to make sure that
+binaries and sources match up ok.
+
+We copy the nosrc related rpms into a channel, then run resolve. The "odd"
+filename of the nosrc srpm can prevent binary rpms from matching their
+sources if this handling is not present.
+
+@O@<atest/resolve-nosrc.fw.sh@>==@{
+
+pdk workspace create nosrc
+pushd nosrc
+    cat >etc/channels.xml <<EOF
+<channels>
+  <nosrc>
+    <type>dir</type>
+    <path>$(pwd)/nosrc-channel</path>
+  </nosrc>
+</channels>
+EOF
+
+    mkdir nosrc-channel
+    cp $PACKAGES/nosrc-test*.rpm nosrc-channel
+
+    pdk channel update
+    cat >nosrc.xml <<EOF
+<component>
+  <contents>
+    <srpm>nosrc-test</srpm>
+  </contents>
+</component>
+EOF
+    pdk resolve -R nosrc.xml
+
+    diff -u - nosrc.xml <<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<component>
+  <contents>
+    <srpm>
+      <name>nosrc-test</name>
+      <rpm ref="md5:efb3e78f4fe0df8381d32d0e91c9a218">
+        <name>nosrc-test</name>
+        <version>1-1</version>
+        <arch>i386</arch>
+      </rpm>
+      <srpm ref="md5:6f2249dc906e63dffe77981c81e16b06">
+        <name>nosrc-test</name>
+        <version>1-1</version>
+      </srpm>
+    </srpm>
+  </contents>
+</component>
+EOF
+
+popd
+@}
+@! vim:set ai et sw=4 ts=4 tw=75:

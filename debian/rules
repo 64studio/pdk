@@ -1,0 +1,38 @@
+#!/usr/bin/make -f
+
+# $Progeny$
+#
+#   Copyright 2005 Progeny Linux Systems, Inc.
+#
+#   This file is part of PDK.
+#
+#   PDK is free software; you can redistribute it and/or modify it
+#   under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   PDK is distributed in the hope that it will be useful, but WITHOUT
+#   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+#   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+#   License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with PDK; if not, write to the Free Software Foundation,
+#   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+DEB_PYTHON_SYSTEM=pycentral
+
+#include /usr/share/cdbs/1/rules/buildcore.mk
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/python-distutils.mk
+
+clean::
+	rm -f atest.tar
+
+install/pdk::
+	python makeman.py >pdk.1
+	sh run_atest -d
+	tar c --exclude=atest/packages --exclude=.svn atest \
+		run_atest utest.py doc/*.fw >atest.tar
+
+# vim:set ai noet sw=8 ts=8 tw=75:

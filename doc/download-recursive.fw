@@ -1,0 +1,82 @@
+@! $Progeny$
+@!
+@!   Copyright 2005 Progeny Linux Systems, Inc.
+@!
+@!   This file is part of PDK.
+@!
+@!   PDK is free software; you can redistribute it and/or modify it
+@!   under the terms of the GNU General Public License as published by
+@!   the Free Software Foundation; either version 2 of the License, or
+@!   (at your option) any later version.
+@!
+@!   PDK is distributed in the hope that it will be useful, but WITHOUT
+@!   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+@!   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+@!   License for more details.
+@!
+@!   You should have received a copy of the GNU General Public License
+@!   along with PDK; if not, write to the Free Software Foundation,
+@!   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+@p indentation = none
+
+@A@<Download Recursive@>
+
+Download has not always worked in a recursive manner.
+
+In this test we rely on the fact the repogen only works when all
+relevant packages are downloaded.
+
+We bait the test with a two level component hierarchy. We invoke a
+single download at the root of the hierarchy, then try repogen on that
+root.
+
+@t table_of_contents
+
+@B
+
+Here is where we load libraries and set up workspaces for the source
+and destination sides of the pull.
+
+@$@<Prep Work@>==@{
+
+. atest/utils/repogen-fixture.sh
+
+set_up_repogen_fixture download
+
+@}
+
+@B
+
+Now we set up the source for a second pull. We make a simple text
+change to a file, as nothing fancy is needed.
+
+@$@<Try Download and Repogen.@>==@{
+
+pushd download
+    rm -rf etc/cache/md5 etc/cache/sha-1
+    cat >root.xml <<EOF
+<component>
+  <contents>
+    <component>progeny.com/apache.xml</component>
+    <component>progeny.com/emacs.xml</component>
+  </contents>
+</component>
+EOF
+
+    pdk download root.xml
+    pdk repogen root.xml
+popd
+
+@}
+
+@B@<Test Outline@>
+
+Note that the client pull section gets run twice. The first run is a
+pull into an empty workspace, the second is into a populated one.
+
+@O@<atest/download-recursive.fw.sh@>==@{
+@<Prep Work@>
+@<Try Download and Repogen.@>
+@}
+@! vim:set ai et sw=4 ts=4 tw=75:

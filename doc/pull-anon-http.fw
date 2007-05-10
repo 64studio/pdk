@@ -1,0 +1,200 @@
+@! $Progeny$
+@!
+@!   Copyright 2005, 2006 Progeny Linux Systems, Inc.
+@!
+@!   This file is part of PDK.
+@!
+@!   PDK is free software; you can redistribute it and/or modify it
+@!   under the terms of the GNU General Public License as published by
+@!   the Free Software Foundation; either version 2 of the License, or
+@!   (at your option) any later version.
+@!
+@!   PDK is distributed in the hope that it will be useful, but WITHOUT
+@!   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+@!   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+@!   License for more details.
+@!
+@!   You should have received a copy of the GNU General Public License
+@!   along with PDK; if not, write to the Free Software Foundation,
+@!   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+@p indentation = none
+
+@A@<Pull Over Anonymous http@>
+
+In this test we will set up an http server and run a pdk pull from it.
+
+Our goal is to make sure that a first pull and subsequent pulls all
+work.
+
+We also check that pulling from something that isn't a workspace
+fails. Obviously over raw http this is going to problematic, as there
+is no one remotely we can just ask. We will have to poke around and
+"discover" is the remote url is really a remote repository. In the
+future this test may house some regressions as we find corner cases.
+
+@t table_of_contents
+
+@B
+
+Here is where we load libraries and set up workspaces for the source
+and destination sides of the pull.
+
+@$@<Prep Work@>==@{
+
+. atest/utils/repogen-fixture.sh
+
+set_up_repogen_fixture source
+
+pdk workspace create dest
+
+@<Set up Apache.@>
+
+@}
+
+@B
+
+The http server setup is pretty minimal. We just set up a document root
+pointing directly at this sandbox. No cgi or anything special needed.
+
+@$@<Set up Apache.@>==@{
+# set up http server
+create_lighttpd_conf <<EOF
+server.document-root = "$tmp_dir"
+EOF
+start_lighttpd
+
+@}
+
+@B
+
+Here is how we set up the channels.xml file on the destination
+side. The product section is for the pull that will succeed. The oops
+sections are examples of pulls we expect to fail.
+
+@$@<channels.xml@>==@{
+
+cat >etc/channels.xml <<EOF
+<?xml version="1.0"?>
+<channels>
+  <product>
+    <type>source</type>
+    <path>http://localhost:$HTTP_PORT/source</path>
+  </product>
+  <product-ssl>
+    <type>source</type>
+    <path>https://localhost:$HTTPS_PORT/source</path>
+  </product-ssl>
+  <oops-404>
+    <type>source</type>
+    <path>http://localhost:$HTTP_PORT/product-zzz</path>
+  </oops-404>
+  <oops-direct-git>
+    <type>source</type>
+    <path>http://localhost:$HTTP_PORT/source/etc/git</path>
+  </oops-direct-git>
+</channels>
+EOF
+
+@}
+
+@B
+
+Here we add and commit somes files for the initial pull.
+
+@$@<Set up source for first pull.@>==@{
+
+pushd source
+    pdk add progeny.com/*.xml
+    pdk download progeny.com/*.xml
+    pdk commit -m "git-production commit"
+popd
+
+@}
+
+@B
+
+Here we run pull three times. First we run two pulls we expect to fail
+for various reasons. Then we run the pull we expect to succeed. Last,
+we check that certain parts of the source and dest workspaces are
+identical after the pull.
+
+@$@<Pull and check.@>@M==@{
+
+pushd dest
+    pdk pull oops-404 && fail '404 should cause failure'
+    pdk pull oops-direct-git \
+        && fail 'no remote workspace should cause failure'
+    pdk pull product
+    pdk download progeny.com/apache.xml
+popd
+
+diff -u source/etc/git/refs/heads/master \
+    dest/etc/git/refs/heads/master
+
+(cd source; ls progeny.com >$tmp_dir/expected)
+(cd dest; ls progeny.com >$tmp_dir/actual)
+diff -u $tmp_dir/expected $tmp_dir/actual \
+    || fail 'checked out files should match'
+
+@}
+
+@B
+
+Now we set up the source for a second pull. We make a simple text
+change to a file, as nothing fancy is needed.
+
+@$@<Set up source for subsequent pull.@>==@{
+
+pushd source
+    echo >>progeny.com/apache.xml
+    pdk commit -m 'a change'
+popd
+
+@}
+
+@B
+
+Pull should not be allowed on a dirty repsitory
+
+@$@<Pull Dirty@>==@{
+
+pushd dest
+    echo >>progeny.com/apache.xml
+    pdk pull product 2>errors.txt\
+        && fail "pdk pull should fail when workspace is dirty"
+    grep -i uncommitted errors.txt
+popd
+
+@}
+
+@B
+
+Now pull via ssl.
+
+@$@<Pull SSL@>==@{
+
+pushd dest
+    pdk pull product-ssl
+popd
+
+@}
+
+@B@<Test Outline@>
+
+Note that the client pull section gets run twice. The first run is a
+pull into an empty workspace, the second is into a populated one.
+
+@O@<atest/pull-anon-http.fw.sh@>==@{
+@<Prep Work@>
+pushd dest
+@<channels.xml@>
+popd
+@<Set up source for first pull.@>
+@<Pull and check.@>
+@<Set up source for subsequent pull.@>
+@<Pull and check.@>
+@<Pull SSL@>
+@<Pull Dirty@>
+@}
+@! vim:set ai et sw=4 ts=4 tw=75:

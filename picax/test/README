@@ -1,0 +1,32 @@
+$Progeny$
+
+This test framework uses PyUnit, the standard test framework in
+Python.  Tests are loaded and run by utest.py, in the root of the
+project, which is called by various other programs in the build
+process.
+
+Running Tests
+-------------
+
+The tests should run as a part of the build process, which should fail
+if any of the tests fail.  To do a simple run of the tests, just
+change to the project's root directory and run "./atest.py".
+
+When utest.py is executed, it defines a TestSuite called "top_suite"
+containing all of the other tests.  People using custom TestRunners
+should be able to load utest.py as a module and point the runner at
+top_suite.  When utest is loaded as a module, it is careful not to run
+the tests under the default text-based runner.
+
+Writing New Tests
+-----------------
+
+To add tests to the test framework, create a Python module in
+modules/test, starting its name with "test_".  Make sure that all
+tests you want to run are ultimately subclasses of unittest.TestCase.
+Each test method's name should start with the word "test".  If these
+guidelines are followed, utest.py will pick up the test automatically.
+
+You can create other modules in the test namespace, which will not be
+loaded automatically by the test framework.  This can be helpful, for
+example, to set up shared harnesses.

@@ -1,0 +1,319 @@
+@! $Progeny$
+@!
+@!   Copyright 2005, 2006 Progeny Linux Systems, Inc.
+@!
+@!   This file is part of PDK.
+@!
+@!   PDK is free software; you can redistribute it and/or modify it
+@!   under the terms of the GNU General Public License as published by
+@!   the Free Software Foundation; either version 2 of the License, or
+@!   (at your option) any later version.
+@!
+@!   PDK is distributed in the hope that it will be useful, but WITHOUT
+@!   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+@!   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+@!   License for more details.
+@!
+@!   You should have received a copy of the GNU General Public License
+@!   along with PDK; if not, write to the Free Software Foundation,
+@!   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+@p indentation = none
+
+@A@<Link Report@>
+
+In this test we run a very simple link report.
+
+We are going to link apache-common to a simple security vulnerability. We
+are also going to use the debish condition language.
+
+At this point the tool is very raw and only puts out a machine
+readable report of links that exist.
+
+@t table_of_contents
+
+@$@<Link Entity@>==@{
+cat >links.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <deb>
+      <cond><![CDATA[ apache2-common (<=2.0.54) ]]></cond>
+      <meta>
+        <link>
+          <vuln>CAN-30</vuln>
+        </link>
+      </meta>
+    </deb>
+  </contents>
+  <entities>
+    <vuln id="CAN-30">
+      <description>bad bad bad</description>
+    </vuln>
+  </entities>
+</component>
+EOF
+
+cat >product.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <component>links.xml</component>
+    <component>progeny.com/apache.xml</component>
+  </contents>
+</component>
+EOF
+
+pdk dumplinks product.xml >report.txt
+
+diff -u - report.txt <<EOF
+deb|md5:5acd04d4cc6e9d1530aad04accdc8eb5|vuln|CAN-30
+EOF
+
+@}
+
+Now we add an unlink. After unlinking there should be no link.
+
+@$@<Link and Unlink Entity@>==@{
+
+cat >unlink.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <deb>
+      <cond><![CDATA[ apache2-common (>= 2.0.53-5) ]]></cond>
+      <meta>
+        <unlink>
+          <vuln>CAN-30</vuln>
+        </unlink>
+      </meta>
+    </deb>
+  </contents>
+</component>
+EOF
+
+cat >product.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <component>links.xml</component>
+    <component>unlink.xml</component>
+    <component>progeny.com/apache.xml</component>
+  </contents>
+</component>
+EOF
+
+pdk dumplinks product.xml >report.txt
+
+diff -u - report.txt <<EOF
+EOF
+
+@}
+
+@B
+
+In this test we don't cover every combination of version ranges, as
+these are covered in the internal unit tests.
+
+Notice here that we use an exclusive upper bound in the CAN-31
+link. That will result in CAN-31 not being linked.
+
+@$@<Version Range@>==@{
+
+cat >links.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <deb>
+      <cond><![CDATA[ apache2-common (<< 2.0.53-5) ]]></cond>
+      <meta>
+        <link>
+          <vuln>CAN-31</vuln>
+        </link>
+      </meta>
+    </deb>
+    <deb>
+      <cond><![CDATA[ apache2-common (>>2.0.52 <=2.0.53-5) ]]></cond>
+      <meta>
+        <link>
+          <vuln>CAN-30</vuln>
+        </link>
+      </meta>
+    </deb>
+  </contents>
+  <entities>
+    <vuln id="CAN-30">
+      <description>bad bad bad</description>
+    </vuln>
+    <vuln id="CAN-31">
+      <description>not so bad</description>
+    </vuln>
+  </entities>
+</component>
+EOF
+
+cat >product.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <component>links.xml</component>
+    <component>progeny.com/apache.xml</component>
+  </contents>
+</component>
+EOF
+
+
+pdk dumplinks product.xml >report.txt
+
+diff -u - report.txt <<EOF
+deb|md5:5acd04d4cc6e9d1530aad04accdc8eb5|vuln|CAN-30
+EOF
+
+@}
+
+@B
+
+Here we use an @{or@} condition to widen the opportunities for CAN-31
+to link. This time it will succeed.
+
+@$@<Or Condition@>==@{
+
+cat >links.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <deb>
+      <cond><![CDATA[ apache2-common (=2.0.53-5) | apache3 ]]></cond>
+      <meta>
+        <link>
+          <vuln>CAN-31</vuln>
+        </link>
+      </meta>
+    </deb>
+    <deb>
+      <cond><![CDATA[ apache2-common (>>2.0.52 <=2.0.53-5) ]]></cond>
+      <meta>
+        <link>
+          <vuln>CAN-30</vuln>
+        </link>
+      </meta>
+    </deb>
+  </contents>
+  <entities>
+    <vuln id="CAN-30">
+      <description>bad bad bad</description>
+    </vuln>
+    <vuln id="CAN-31">
+      <description>not so bad</description>
+    </vuln>
+  </entities>
+</component>
+EOF
+
+pdk dumplinks product.xml | LANG=C sort >report.txt
+
+diff -u - report.txt <<EOF
+deb|md5:5acd04d4cc6e9d1530aad04accdc8eb5|vuln|CAN-30
+deb|md5:5acd04d4cc6e9d1530aad04accdc8eb5|vuln|CAN-31
+EOF
+
+@}
+
+@B
+
+The star operator allows for "complement" matching. It is common to want to
+attach metadata to all the binaries which share a common source package.
+
+Notice the the report.txt file contains a reference to a deb.
+
+@$@<Star Condition@>==@{
+cat >links.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <dsc>
+      <cond><![CDATA[ * apache2 ]]></cond>
+      <meta>
+        <link>
+          <vuln>CAN-30</vuln>
+        </link>
+      </meta>
+    </dsc>
+  </contents>
+  <entities>
+    <vuln id="CAN-30">
+      <description>bad bad bad</description>
+    </vuln>
+  </entities>
+</component>
+EOF
+
+pdk dumplinks product.xml | LANG=C sort >report.txt
+
+diff -u - report.txt <<EOF
+deb|md5:5acd04d4cc6e9d1530aad04accdc8eb5|vuln|CAN-30
+EOF
+
+@}
+
+@$@<General src/bin Condition@>==@{
+cat >links.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <bin>
+      <cond><![CDATA[ * apache2-common ]]></cond>
+      <meta>
+        <link>
+          <vuln>CAN-31</vuln>
+        </link>
+      </meta>
+    </bin>
+    <src>
+      <cond><![CDATA[ * apache2 ]]></cond>
+      <meta>
+        <link>
+          <vuln>CAN-30</vuln>
+        </link>
+      </meta>
+    </src>
+  </contents>
+  <entities>
+    <vuln id="CAN-30">
+      <description>bad bad bad</description>
+    </vuln>
+  </entities>
+</component>
+EOF
+
+pdk dumplinks product.xml | LANG=C sort >report.txt
+
+diff -u - report.txt <<EOF
+deb|md5:5acd04d4cc6e9d1530aad04accdc8eb5|vuln|CAN-30
+dsc|md5:d94c995bde2f13e04cdd0c21417a7ca5|vuln|CAN-31
+EOF
+
+
+@}
+
+@B@<Test Outline@>
+
+This is the macro wrapper for the test.
+
+@O@<atest/link-report.fw.sh@>==@{
+. atest/utils/repogen-fixture.sh
+
+set_up_repogen_fixture link-report
+pushd link-report
+
+@<Link Entity@>
+@<Link and Unlink Entity@>
+@<Version Range@>
+@<Or Condition@>
+@<Star Condition@>
+@<General src/bin Condition@>
+
+popd
+
+@}
+@! vim:set ai et sw=4 ts=4 tw=75:

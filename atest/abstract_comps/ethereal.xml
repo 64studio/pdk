@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component>
+  <contents>
+    <dsc>
+      <name>ethereal</name>
+      <version>0.9.13-1.0progeny2</version>
+    </dsc>
+    <deb>
+      <name>ethereal</name>
+      <version>0.9.13-1.0progeny2</version>
+      <arch>ia64</arch>
+    </deb>
+    <deb>
+      <name>ethereal-common</name>
+      <version>0.9.13-1.0progeny2</version>
+      <arch>ia64</arch>
+    </deb>
+    <deb>
+      <name>ethereal-dev</name>
+      <version>0.9.13-1.0progeny2</version>
+      <arch>ia64</arch>
+    </deb>
+    <deb>
+      <name>tethereal</name>
+      <version>0.9.13-1.0progeny2</version>
+      <arch>ia64</arch>
+    </deb>
+  </contents>
+</component>

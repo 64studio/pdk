@@ -1,0 +1,38 @@
+# $Progeny$
+Source: pdk
+Section: devel
+Priority: optional
+Maintainer: Darrin Thompson <darrint@progeny.com>
+Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5.0.37.2), python-all-dev, python-central (>= 0.5), funnelweb
+Standards-Version: 3.7.2
+XS-Python-Version: current
+
+Package: pdk
+Architecture: all
+Depends: ${shlibs:Depends}, ${python:Depends}, git-core (>= 1.3), python-apt, python-celementtree, python-pycurl | python2.3-pycurl, python-xml, smartpm, python-egenix-mxtexttools
+Conflicts: picax
+Replaces: picax
+Provides: picax
+Suggests: apache2, curl, libapache2-svn, openssl, python-librpm4.4, python-pylint, rpm-4.4, subversion, funnelweb
+Description: Componentized Linux Platform Development Kit (PDK)
+ Componentized Linux is a platform for building specialized Linux
+ distributions.  Componentized Linux provides developers with a set of
+ reusable building blocks, called components, which can be easily assembled
+ into a wide variety of configurations and customized as necessary.  It
+ combines this componentized platform with a set of technologies (covering
+ installation, software management, and hardware detection, with more on the
+ way) that span traditional distribution boundaries and transform the
+ assembled components into a complete distribution.
+ .
+ This package contains the Componentized Linux Platform Development Kit (PDK).
+ Essentially, you can think of the PDK as "version control for
+ distributions"--it's intended to be a full suite of tools for building and
+ maintaining a CL-based distribution, from assembling a full distro from a set
+ of pre-built components to managing the evolution of the distro over time to
+ incorporate upstream changes to building your own custom components to
+ specifying global configuration like branding to integrating distro-specific
+ patches and managing the changes over time.
+ .
+ Homepage: http://componentizedlinux.org/
+XB-Python-Version: ${python:Versions}
+# vim:set ai et sw=1 ts=1 tw=78:

@@ -1,0 +1,129 @@
+@! $Progeny$
+@!
+@!   Copyright 2006 Progeny Linux Systems, Inc.
+@!
+@!   This file is part of PDK.
+@!
+@!   PDK is free software; you can redistribute it and/or modify it
+@!   under the terms of the GNU General Public License as published by
+@!   the Free Software Foundation; either version 2 of the License, or
+@!   (at your option) any later version.
+@!
+@!   PDK is distributed in the hope that it will be useful, but WITHOUT
+@!   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+@!   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+@!   License for more details.
+@!
+@!   You should have received a copy of the GNU General Public License
+@!   along with PDK; if not, write to the Free Software Foundation,
+@!   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+@p indentation = none
+
+@A@<Pull from a Third Party@>
+
+In this test we set up two sources to pull from.
+
+We pull from the first, then pull from a second one after establishing some
+history.
+
+Our goal is simply to make sure the process doesn't blow up.
+
+@t table_of_contents
+
+@B
+
+Here we set up our two sources.
+
+@$@<Set up sources for first pull.@>==@{
+
+pushd source
+    pdk add progeny.com/*.xml
+    pdk download progeny.com/*.xml
+    pdk commit -m "git-production commit"
+popd
+
+pushd 3p
+    mkdir third-party
+    echo hello >third-party/file
+    pdk add third-party/file
+    pdk commit -m "first third party commit"
+popd
+
+@}
+
+@B
+
+Here is the meat of the test.
+
+From the destination workspace, pull from the first repository, make
+another commit, the pull from the second repository for the first time.
+
+@$@<Pull and check.@>@M==@{
+
+pushd dest
+    pdk pull source
+    echo world >some-file
+    pdk add some-file
+    pdk commit -m 'a local commit'
+    pdk pull third-party
+popd
+
+[ -e dest/progeny.com/apache.xml ] || fail "missing third-party file"
+[ -e dest/third-party/file ] || fail "missing third-party file"
+
+@}
+
+@B
+
+Here is where we load libraries and set up workspaces for the source
+and destination sides of the pull.
+
+@$@<Prep Work@>==@{
+
+. atest/utils/repogen-fixture.sh
+
+set_up_repogen_fixture source
+
+pdk workspace create 3p
+pdk workspace create dest
+
+@}
+
+@B
+
+Here is how we set up the channels.xml file on the destination
+side.
+
+@$@<channels.xml@>==@{
+
+cat >etc/channels.xml <<EOF
+<?xml version="1.0"?>
+<channels>
+  <source>
+    <type>source</type>
+    <path>$(pwd)/../source</path>
+  </source>
+  <third-party>
+    <type>source</type>
+    <path>$(pwd)/../3p</path>
+  </third-party>
+</channels>
+EOF
+
+@}
+
+@B@<Test Outline@>
+
+Note that the client pull section gets run twice. The first run is a
+pull into an empty workspace, the second is into a populated one.
+
+@O@<atest/pull-third-party.fw.sh@>==@{
+@<Prep Work@>
+pushd dest
+@<channels.xml@>
+popd
+@<Set up sources for first pull.@>
+@<Pull and check.@>
+@}
+@! vim:set ai et sw=4 ts=4 tw=75:

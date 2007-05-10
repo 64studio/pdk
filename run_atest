@@ -1,0 +1,344 @@
+#!/bin/sh
+#
+# $Progeny$
+#
+#   Copyright 2005 Progeny Linux Systems, Inc.
+#
+#   This file is part of PDK.
+#
+#   PDK is free software; you can redistribute it and/or modify it
+#   under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   PDK is distributed in the hope that it will be useful, but WITHOUT
+#   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+#   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+#   License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with PDK; if not, write to the Free Software Foundation,
+#   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+########################################################################
+# run_atest
+#
+# Execute the acceptance test suite
+# run_atest <test>[, <test> [...]]
+#
+# All test results (and much more than those) are to stdout.
+
+# NOTES
+# * if you start a process, put the pid in a file in a dir called
+#   'run' under your current directory, to ensure that it is killed
+#   off in cleanup.
+# * set $snapshot if you want a tar file created, otherwise unset it.
+# * The $log is critical, it's how we tally success/failure among the
+#   tests.
+
+#Set up colors
+pass="$(tput setaf 7; tput setab 2; tput bold)"
+fail="$(tput setaf 7; tput setab 1; tput bold)"
+reset="$(tput sgr0)"
+
+set -e
+
+install_in_sandbox=1
+
+setup_initial() {
+    tdir=$1
+
+    if [ -n "$install_in_sandbox" ]; then
+        rm -rf build/
+        python setup.py     --quiet build --build-base=${tdir}/tmp-build \
+            install --home=${tdir}
+        echo "import compileall; " \
+             "compileall.compile_dir('${tdir}/lib', quiet=True)" \
+            | python
+        rm -rf ${tdir}/tmp-build
+    fi
+    ln -s ${dev_dir}/atest/packages ${tdir}
+    ln -s ${dev_dir}/atest ${tdir}
+    mkdir ${tdir}/run
+}
+
+setup() {
+    tdir=$1
+
+    cp -r ${setup_dir}/* ${tdir}
+}
+
+cleanup() {
+    trap - 0
+    message=''
+    args=$(getopt -o sr:m: -- "$@")
+    eval set -- "$args"
+    while true; do
+        case "$1" in
+            -s) shift; snapshot=1;;
+            -r) shift; result="$1"; shift;;
+            -m) shift; message="$1"; shift;;
+            --) shift; break;;
+        esac
+    done
+
+    # Kill all processes identified in the run/ dir
+    # under the tmp.
+    cd ${tmp_dir}
+    if ls run/* 2>/dev/null; then
+        for pid in $(cat run/*); do
+            kill -TERM ${pid} || true
+        done
+    fi
+    wait
+
+    # Create a snapshot, if desired
+    if [ -n "${snapshot}" ]; then
+        tar zcfC ${dev_dir}/${test_name}.snap.tar.gz ${tmp_dir} .
+    fi
+
+    if [ -n "${tmp_dir}" ]; then
+        rm -rf ${tmp_dir}
+    fi
+
+    if [ -n "${result}" ]; then
+        echo -e "${test_name}\t${result}\t${message}" >>${log}
+    fi
+
+    # Colorized results are nice as work scrolls past.
+    if [ $report_colorized_results ]; then
+        if [ "${result}" = "pass" ]; then
+            echo -e "${pass}${test_name}${reset} ${result} ${message} " >&2
+        else
+            echo -e "${fail}${test_name}${reset} ${result} ${message} " >&2
+        fi
+        echo
+    fi
+
+    exit
+}
+
+
+fail () {
+    set +x
+    message=$1
+    if [ -z "${message}" ]; then
+        message='no message given'
+    fi
+    cleanup -s -r fail -m "${message}"
+}
+
+pass () {
+    set +x
+    cleanup -r pass
+}
+
+stop () {
+    set +x
+    echo 1 > $halt_file
+    fail 'unexpected termination signal'
+}
+
+run_test() {
+    # Begin with a subshell
+    (
+        trap "fail \"unexpected exit \$?\"" 0
+        trap "stop" 1 2 3 15
+
+        test_name=$(basename $test)
+        tmp_dir=$(mktemp -dt ${test_name}.XXXXXX)
+        echo "--------------------------------------------------------"
+        echo " ${test_name} running in ${tmp_dir}"
+
+        setup ${tmp_dir}
+        export PACKAGES=${tmp_dir}/packages
+
+        mkdir -p ${tmp_dir}/bin
+        PATH=${tmp_dir}/bin:$PATH
+        PYTHONPATH=${tmp_dir}/lib/python:$PYTHONPATH
+        export PYTHONPATH
+        EDITOR=false
+        export EDITOR
+
+        cd ${tmp_dir}
+        echo "------------------------------------"
+        if [ -z "${quiet}" ]; then
+            set -x
+        fi
+
+        . $test
+
+        pass
+    ) || true
+}
+
+future_tests=""
+args=$(getopt -o dqI -- "$@")
+eval set -- "$args"
+while true; do
+    case "$1" in
+        -d) shift; docs_only=1 ;;
+        -I) shift; unset install_in_sandbox ;;
+        -q) shift; quiet=1 ;;
+        --) shift; break;;
+    esac
+done
+
+# freshen tests from doc directory
+rm -f atest/*.fw.sh
+for test in $(ls doc/*.fw); do
+    fw +Q +L -T +U $test
+done
+
+if [ -n "$docs_only" ]; then
+    exit 0
+fi
+
+if [ -z "$*" ]; then
+    # If no tests listed, run all tests
+    tests=$(ls atest/*.sh)
+    if [ -z "$tests" ]; then
+        echo >&2 "No tests found!"
+        exit 1
+    fi
+    ls atest/future/*.sh >/dev/null 2>&1 && {
+        future_tests=$(ls atest/future/*.sh)
+    }
+    report_colorized_results="colorize"
+else
+    tests="$@"
+    report_colorized_results=""
+    no_parallel="just serial please"
+fi
+
+# Create a fresh report file
+dev_dir=$(pwd)
+log=${dev_dir}/atest.log
+rm -f ${log}
+rm -rf $dev_dir/atest.log.d
+mkdir -p $dev_dir/atest.log.d
+
+# Do the initial setup
+setup_dir=$(mktemp -dt setup-template.XXXXXX)
+setup_initial ${setup_dir}
+
+run_test_batch() {
+    for test in $*; do
+        halt_file="$(mktemp -t atest.halt.XXXXXX)"
+        run_test $test
+        halt_contents="$(cat $halt_file)"
+        rm $halt_file
+        if [ -n "$halt_contents" ]; then
+            break
+        fi
+    done
+}
+
+random() {
+    head -c4 /dev/urandom | od -N2 -tu4 | sed -ne '1s/.* //p'
+}
+
+run_test_batch_in_parallel() {
+    batchname=$1
+    shift
+    list=$dev_dir/atest.log.d/list.${batchname}
+
+    for test in $*; do
+        echo "$test" >>$list
+    done
+    exec 3<$list
+
+
+    semaphore_file="$(mktemp -t atest.semaphore.XXXXXX)"
+    rm $semaphore_file
+
+    job_count=4
+    save_log="$log"
+    for i in $(seq $job_count); do
+        (
+            child_holder="$(mktemp -t atest.child.XXXXXX)"
+            echo $$ >$child_holder
+
+            while true; do
+                # try to acquire lock
+                if ! ln $child_holder $semaphore_file 2>/dev/null; then
+                    sleep 0.$(( $(random) % 10 ))
+                    continue
+                fi
+
+                read <&3 test || true
+
+                # release lock
+                rm $semaphore_file
+
+                if [ -z "$test" ]; then
+                    break
+                fi
+
+                test_key=$(basename $test)
+                log=$dev_dir/atest.log.d/$test_key.log.$batchname
+                run_test_batch "$test" >atest.log.d/$test_key.output 2>&1
+                cat $log
+            done
+        ) &
+    done
+    wait
+
+    log="$save_log"
+    for logfn in $dev_dir/atest.log.d/*.log.$batchname; do
+        cat $logfn >>$log || true
+        newlogfn=$(echo "$logfn" | sed s/\\.$batchname//)
+        mv $logfn $newlogfn
+    done
+}
+
+# Run the tests
+if [ -n "${no_parallel}" ]; then
+    run_test_batch $tests
+else
+    run_test_batch_in_parallel std $tests
+fi
+
+# Figure out whether we won or lost:
+fail_file="$(mktemp -t atest.fail.XXXXXX)"
+awk -v FS='\t' -v OFS='\t' '$2 == "fail" { print $1, $3 }' ${log} >${fail_file}
+fail_count="$(wc -l <${fail_file})"
+
+# Run future tests
+if [ -n "${future_tests}" ]; then
+    log=${dev_dir}/future.log
+    test -f ${log} && rm ${log}
+    unset report_colorized_results
+    if [ -n "${no_parallel}" ]; then
+        run_test_batch ${future_tests}
+    else
+        run_test_batch_in_parallel future ${future_tests}
+    fi
+fi
+
+# Clean up our initial setup dir
+if [ -n "${setup_dir}" ]; then
+    rm -rf "${setup_dir}"
+fi
+
+# print a simple and colorful report
+echo -e "\n============================================================"
+if [ "${fail_count}" = 0 ]; then
+    echo "${pass}> pass <${reset}"
+    status=0
+else
+    echo "${fail}> fail <${reset}"
+    awk -v FS='\t' '{ printf "%-25s %s\n", $1, $2 }' ${fail_file}
+    status=1
+fi
+
+# Report on future tests
+if [ -n "${future_tests}" ] ; then
+    echo -e '\nFuture tests -------------------------------------------'
+    rm ${fail_file}
+    column -t ${log}
+fi
+
+$DONE_ACTION
+exit $status
+
+# vim:set ai et sw=4 ts=4 tw=75:

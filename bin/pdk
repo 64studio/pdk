@@ -1,0 +1,69 @@
+#!/usr/bin/python
+#
+# $Progeny$
+#
+#   Copyright 2005 Progeny Linux Systems, Inc.
+#
+#   This file is part of PDK.
+#
+#   PDK is free software; you can redistribute it and/or modify it
+#   under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   PDK is distributed in the hope that it will be useful, but WITHOUT
+#   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+#   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+#   License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with PDK; if not, write to the Free Software Foundation,
+#   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+"""
+pdk
+
+This is the command line controller for all pdk.
+"""
+
+__revision__ = '$Progeny$'
+
+import os
+import sys
+import pdk.log as log
+from pdk.pdk_commands import commands, load_addins
+from pdk.util import assert_python_version, pjoin
+assert_python_version()
+
+from warnings import filterwarnings
+logger = log.get_logger()
+
+plugin_locations = [
+    pjoin(os.environ.get('HOME', '.'), ".pdk_addins")
+    , ".pdk_addins"
+    , ".pdk_plugins"
+]
+
+def main():
+    '''Entry point to pdk.'''
+    filterwarnings('ignore', category = FutureWarning)
+    main_args = sys.argv or []
+
+    # Add plug-in commands
+    plugin_files = [ x for x in plugin_locations
+                        if os.path.exists(x) ]
+    load_addins(plugin_files)
+
+    commands.run(main_args[1:])
+
+if __name__ == '__main__':
+    if 'PDK_PROF_DUMP' in os.environ:
+        prof_filename = os.environ['PDK_PROF_DUMP']
+        import hotshot
+        prof = hotshot.Profile(prof_filename)
+        prof.runcall(main)
+        prof.close()
+    else:
+        main()
+
+# vim:set ai et sw=4 ts=4 tw=75:

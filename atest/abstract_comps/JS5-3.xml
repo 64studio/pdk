@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<component>
+  <meta>
+    <origin>community</origin>
+    <label>distro</label>
+    <version>1.0</version>
+    <codename>zip</codename>
+    <suite>stable</suite>
+    <date>Tue, 22 Mar 2005 21:20:00 +0000</date>
+    <description>Jam Session 5-3!</description>
+  </meta>
+  <contents>
+    <component>main.xml</component>
+  </contents>
+</component>

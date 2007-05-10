@@ -1,0 +1,115 @@
+@! $Progeny$
+@!
+@!   Copyright 2006 Progeny Linux Systems, Inc.
+@!
+@!   This file is part of PDK.
+@!
+@!   PDK is free software; you can redistribute it and/or modify it
+@!   under the terms of the GNU General Public License as published by
+@!   the Free Software Foundation; either version 2 of the License, or
+@!   (at your option) any later version.
+@!
+@!   PDK is distributed in the hope that it will be useful, but WITHOUT
+@!   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+@!   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+@!   License for more details.
+@!
+@!   You should have received a copy of the GNU General Public License
+@!   along with PDK; if not, write to the Free Software Foundation,
+@!   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+@p indentation = none
+
+@A@<Conditional Include@>
+
+In this test we apply conditions to includes to verify that we can include
+partial components.
+
+@t table_of_contents
+
+@B
+
+Here we include only a few packages from the named components.
+
+The arm architecture disappears because no packages for the arm achitecture
+end up in the root component.
+
+@$@<Do Conditional Inclusion.@>==@{
+
+pushd include
+    rm -rf etc/cache/md5 etc/cache/sha-1
+    cat >star.xml <<EOF
+<component>
+  <contents>
+    <component>progeny.com/apache.xml</component>
+    <component>progeny.com/python.xml</component>
+    <component>progeny.com/ida.xml</component>
+    <component>progeny.com/emacs.xml</component>
+    <component>progeny.com/time.xml</component>
+  </contents>
+</component>
+EOF
+
+    cat >root.xml <<EOF
+<component>
+  <contents>
+    <component>
+      <file>star.xml</file>
+      <limit> { format = deb } </limit>
+      <limit> { lang %= en } </limit>
+      <exclude> ** emacs-defaults { role = source } </exclude>
+    </component>
+    <dsc>
+      <cond><![CDATA[ ** ida ]]></cond>
+      <meta>
+        <lang>de</lang>
+      </meta>
+    </dsc>
+    <dsc>
+      <cond><![CDATA[ ** apache ]]></cond>
+      <meta>
+        <lang>en</lang>
+      </meta>
+    </dsc>
+  </contents>
+</component>
+EOF
+
+    pdk download root.xml
+    pdk repogen root.xml
+
+    for file in $(find -name "Packages" -o -name "Sources" | LANG=C sort)
+    do
+        awk <$file -v prefix=$file \
+            '$1 == "Package:" {print prefix, $2}' >> package-names
+    done
+    diff -u - package-names <<EOF
+./repo/dists/root/main/binary-i386/Packages apache2-common
+./repo/dists/root/main/binary-i386/Packages python
+./repo/dists/root/main/source/Sources apache2
+./repo/dists/root/main/source/Sources python-defaults
+EOF
+popd
+
+@}
+
+@B@<Test Outline@>
+
+@O@<atest/conditional-include.fw.sh@>==@{
+@<Prep Work@>
+@<Do Conditional Inclusion.@>
+@}
+
+@B
+
+Here is where we load libraries and set up workspaces for the source
+and destination sides of the pull.
+
+@$@<Prep Work@>==@{
+
+. atest/utils/repogen-fixture.sh
+
+set_up_repogen_fixture include
+
+@}
+@! vim:set ai et sw=4 ts=4 tw=75:

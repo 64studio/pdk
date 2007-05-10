@@ -1,0 +1,719 @@
+@! $Progeny$
+@!
+@!   Copyright 2005, 2006 Progeny Linux Systems, Inc.
+@!
+@!   This file is part of PDK.
+@!
+@!   PDK is free software; you can redistribute it and/or modify it
+@!   under the terms of the GNU General Public License as published by
+@!   the Free Software Foundation; either version 2 of the License, or
+@!   (at your option) any later version.
+@!
+@!   PDK is distributed in the hope that it will be useful, but WITHOUT
+@!   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+@!   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+@!   License for more details.
+@!
+@!   You should have received a copy of the GNU General Public License
+@!   along with PDK; if not, write to the Free Software Foundation,
+@!   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+@p indentation = none
+
+@A@<Distracting Resolve Functionality@>
+
+In this test we run resolve on a fairly complex component.
+
+Our goal is to make sure that certain elements are added, and others
+are left alone and in their original orders.
+
+Futhermore, we seed the descriptor with some concrete references and
+try to bait resolve into upgrading them. These references should be
+left alone.
+
+We also give resolve the opportunity to include two versions (or the
+wrong ones for that matter) of packages when the same package name is
+available in more than one version from channels.
+
+@t table_of_contents
+
+@B
+
+Before we get to all the boilerplate, we'll look at the "distracting"
+component we will resolve.
+
+The apache.xml tries to trap a number of resolve problems. It contains
+unexpected whitespace, all the expected metadata fields, and some
+concrete references which should not be touched, even if upgrades are
+available.
+
+The empty component is just a placeholder for the reference in
+apache.xml.
+
+@$@<Create Components@>@M==@{
+
+cat >empty.xml <<EOF
+<?xml version="1.0"?>
+<component/>
+EOF
+
+# Add some concrete and abstract package references to a new component.
+cat >apache.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <id>resolveme</id>
+  <name>Resolve Me</name>
+  <description>
+    I need to be resolved
+  </description>
+  <requires>a</requires>
+  <requires>b</requires>
+  <provides>c</provides>
+  <provides>d</provides>
+  <contents>
+    <!-- Ian's funny whitespace -->
+    <dsc>
+      <name>
+        ida
+      </name>
+      <version>2.01-1.2</version>
+      <meta>
+        <predicate>object</predicate>
+      </meta>
+    </dsc>
+    <component>empty.xml</component>
+    <!-- funny whitespace -->
+    <deb>
+      apache2-common
+    </deb>
+    <!-- binary with metadata. watch for regression -->
+    <deb>
+      <name>ethereal-common</name>
+      <meta>
+        <test>data</test>
+      </meta>
+    </deb>
+    <!-- this should be left alone -->
+    <deb>
+      <name>tethereal</name>
+      <meta>
+        <comment>this whole section should be left alone</comment>
+      </meta>
+      <deb ref="md5:904fce57cb39662e9560f0143d326bb8">
+        <name>tethereal</name>
+        <version>0.9.4-1woody4</version>
+        <arch>ia64</arch>
+      </deb>
+      <dsc ref="md5:a6456b3e20f44a3f53256bf722c010cd">
+        <name>ethereal</name>
+        <version>0.9.4-1woody4</version>
+      </dsc>
+    </deb>
+  </contents>
+  <!-- entities should survive the resolve. -->
+  <entities>
+    <test id="1">
+      <a>b</a>
+      <c>d</c>
+      <e>f</e>
+    </test>
+  </entities>
+</component>
+EOF
+
+@}
+
+@B
+
+Here's how we check that the resulting descriptor is what we expect.
+
+In both the apt and dir channels, this is the how the resolved
+component should look.
+
+Note that the original xml comments are not preserved. Maybe someday
+they will persist.
+
+@$@<Verify Component@>@M+=@{
+diff -u - apache.xml <<EOF || bail 'apache.xml differs'
+<?xml version="1.0" encoding="utf-8"?>
+<component>
+  <id>resolveme</id>
+  <name>Resolve Me</name>
+  <description>
+    I need to be resolved
+  </description>
+  <requires>a</requires>
+  <requires>b</requires>
+  <provides>c</provides>
+  <provides>d</provides>
+  <contents>
+    <dsc>
+      <name>ida</name>
+      <version>2.01-1.2</version>
+      <meta>
+        <predicate>object</predicate>
+      </meta>
+      <deb ref="md5:fe2f5a4e8d4e7ae422e71b5bdfaa1e9c">
+        <name>ida</name>
+        <version>2.01-1.2</version>
+        <arch>arm</arch>
+      </deb>
+      <dsc ref="md5:64863d0fde185cc7e572556729fa6f33">
+        <name>ida</name>
+        <version>2.01-1.2</version>
+      </dsc>
+    </dsc>
+    <component>empty.xml</component>
+    <deb>
+      <name>apache2-common</name>
+      <deb ref="md5:5acd04d4cc6e9d1530aad04accdc8eb5">
+        <name>apache2-common</name>
+        <version>2.0.53-5</version>
+        <arch>i386</arch>
+      </deb>
+      <dsc ref="md5:d94c995bde2f13e04cdd0c21417a7ca5">
+        <name>apache2</name>
+        <version>2.0.53-5</version>
+      </dsc>
+    </deb>
+    <deb>
+      <name>ethereal-common</name>
+      <meta>
+        <test>data</test>
+      </meta>
+      <deb ref="md5:fead37813e0a8b27b2d198ed96a09e72">
+        <name>ethereal-common</name>
+        <version>0.9.4-1woody2</version>
+        <arch>i386</arch>
+      </deb>
+      <deb ref="md5:d71f6a54b81e9a02fa90fe9d9f655fac">
+        <name>ethereal-common</name>
+        <version>0.9.4-1woody2</version>
+        <arch>ia64</arch>
+      </deb>
+      <dsc ref="md5:3422eaafcc0c6790921c2fadcfb45c21">
+        <name>ethereal</name>
+        <version>0.9.4-1woody2</version>
+      </dsc>
+    </deb>
+    <deb>
+      <name>tethereal</name>
+      <meta>
+        <comment>this whole section should be left alone</comment>
+      </meta>
+      <deb ref="md5:904fce57cb39662e9560f0143d326bb8">
+        <name>tethereal</name>
+        <version>0.9.4-1woody4</version>
+        <arch>ia64</arch>
+      </deb>
+      <dsc ref="md5:a6456b3e20f44a3f53256bf722c010cd">
+        <name>ethereal</name>
+        <version>0.9.4-1woody4</version>
+      </dsc>
+    </deb>
+  </contents>
+  <entities>
+    <test id="1">
+      <a>b</a>
+      <c>d</c>
+      <e>f</e>
+    </test>
+  </entities>
+</component>
+EOF
+
+@}
+
+@B
+
+This appears at the beginning of the test.
+
+We load some libraries, then we purposefully mess with the umask so we
+can later test that pdk is observing it or ignoring it as needed.
+
+@$@<Prep work@>==@{
+. atest/test_lib.sh
+. atest/utils/test_channel.sh
+
+# Set umask now in preparation for later permissions checking.
+umask 002
+
+@}
+
+@B
+
+Here is the first part of the test, resolving against dir
+channels. The dir channels contain some poison to trap resolve
+regressions. More about this below.
+
+@$@<Dir Channel Test@>+=@{
+pdk workspace create dir-channel
+pushd dir-channel
+
+make_channel channel-1 ida_2.01-1.2_arm.deb ida_2.01-1.2.diff.gz \
+    ida_2.01-1.2.dsc ida_2.01.orig.tar.gz
+
+@}
+
+This next part is important. It contains the resolve misbehavior bait.
+Notice that there are two versions of ethereal present. Pdk resolve is
+only supposed to pick up the newer ones.
+
+@$@<Dir Channel Test@>+=@{
+make_channel channel-2 apache2_2.0.53-5.diff.gz apache2_2.0.53-5.dsc \
+    apache2_2.0.53.orig.tar.gz apache2-common_2.0.53-5_i386.deb \
+    ethereal-common_0.9.4-1woody2_i386.deb \
+    ethereal-common_0.9.4-1woody2_ia64.deb \
+    ethereal_0.9.4-1woody2.dsc \
+    ethereal_0.9.4-1woody2.diff.gz \
+    ethereal_0.9.4.orig.tar.gz \
+    ethereal_0.9.4-1woody5.dsc \
+    ethereal_0.9.4-1woody5.diff.gz \
+    tethereal_0.9.4-1woody5_ia64.deb
+
+@}
+
+Here is a third version of ethereal packages. These shoudn't be
+touched.
+
+Eventually when we run pdk download we will need these packages for
+the command to succeed.
+
+@$@<Dir Channel Test@>+=@{
+make_channel channel-3 \
+    ethereal_0.9.4-1woody4.dsc \
+    ethereal_0.9.4-1woody4.diff.gz \
+    ethereal_0.9.4.orig.tar.gz \
+    tethereal_0.9.4-1woody4_ia64.deb
+
+# Add a channel for the package directory
+cat >etc/channels.xml <<EOF
+<?xml version="1.0"?>
+<channels>
+  <channel-1>
+    <type>dir</type>
+    <path>$(pwd)/channel-1</path>
+  </channel-1>
+  <channel-2>
+    <type>dir</type>
+    <path>$(pwd)/channel-2</path>
+  </channel-2>
+  <channel-3>
+    <type>dir</type>
+    <path>$(pwd)/channel-3</path>
+  </channel-3>
+</channels>
+EOF
+
+pdk channel update
+
+@}
+
+Here is where we prove commands.
+
+resolve -n should make a report we can verify (note the use of -m for
+machine readable report) but it should not change the descriptor.
+
+Next we stop using -n and run the command. The generated report should
+not have changed.
+
+@$@<Dir Channel Test@>+=@{
+@<Create Components@>
+
+cp apache.xml old-apache.xml
+pdk resolve apache.xml --show-unchanged -c channel-1 -m >test-report.txt -n
+diff -u old-apache.xml apache.xml
+
+pdk resolve apache.xml --show-unchanged -c channel-1 -m >report.txt
+# Here's where we test the dry run report
+diff -u test-report.txt report.txt
+pdk resolve apache.xml --show-unchanged -c channel-2 -m >>report.txt
+LANG=C sort report.txt >sorted-report.txt
+
+@<Verify Component@>
+@}
+
+Now we check that the semdiff report comes out as expected.
+
+The downgrade line is an unfortunate artifact: two different source
+packages in the same file with the same name.
+
+@$@<Dir Channel Test@>+=@{
+diff -u - sorted-report.txt <<EOF
+add|deb|apache2-common|2.0.53-5|i386|apache.xml
+add|deb|ethereal-common|0.9.4-1woody2|i386|apache.xml
+add|deb|ethereal-common|0.9.4-1woody2|ia64|apache.xml
+add|deb|ida|2.01-1.2|arm|apache.xml
+add|dsc|apache2|2.0.53-5|any|apache.xml
+add|dsc|ida|2.01-1.2|any|apache.xml
+downgrade|dsc|ethereal|0.9.4-1woody4|0.9.4-1woody2|any|apache.xml
+meta-add|deb|ethereal-common|i386|test|data
+meta-add|deb|ethereal-common|ia64|test|data
+meta-add|deb|tethereal|ia64|comment|this whole section should be left alone
+unchanged|deb|ida|2.01-1.2|2.01-1.2|arm|apache.xml
+unchanged|deb|tethereal|0.9.4-1woody4|0.9.4-1woody4|ia64|apache.xml
+unchanged|deb|tethereal|0.9.4-1woody4|0.9.4-1woody4|ia64|apache.xml
+unchanged|dsc|ethereal|0.9.4-1woody4|0.9.4-1woody4|any|apache.xml
+unchanged|dsc|ethereal|0.9.4-1woody4|0.9.4-1woody4|any|apache.xml
+unchanged|dsc|ida|2.01-1.2|2.01-1.2|any|apache.xml
+EOF
+
+@}
+
+Now we run download and make sure that the timestamps of the original
+packages have been preserved. We also verify that repogen works. This
+is important for the dir channel workspace, as it creates the apt repo
+used by the apt-deb channel workspace.
+
+@$@<Dir Channel Test@>+=@{
+pdk download apache.xml
+
+@<Check Permissions@>
+
+pdk repogen apache.xml
+
+popd
+@}
+
+@B
+
+This is how we set up a workspace for resolving against an apt-deb
+channel. This test doesn't contain all the traps that the dir channels
+set.
+
+In this workspace we set up an Apache daemon to serve a real http
+apt-deb channel.
+
+This next part is for setting up Apache.
+
+@$@<Apt Channel Test@>+=@{
+mkdir etc
+# set up http server
+create_lighttpd_conf <<EOF
+server.document-root = "$tmp_dir/dir-channel/repo/"
+EOF
+start_lighttpd
+
+pdk workspace create apt-channel
+pushd apt-channel
+
+cat >etc/channels.xml <<EOF
+<?xml version="1.0"?>
+<channels>
+  <local>
+    <type>apt-deb</type>
+    <path>http://localhost:$HTTP_PORT/</path>
+    <archs>arm i386 ia64 source</archs>
+    <dist>apache</dist>
+    <components>main</components>
+  </local>
+</channels>
+EOF
+
+pdk channel update
+
+@}
+
+Here we put resolve through some additional gymnastics. Resolve is run
+in a subdirectory. As a bonus we download twice. On the second
+download, there should be no warnings.
+
+We also test that some channel related metadata doesn't show up in the
+change report.
+
+@$@<Apt Channel Test@>+=@{
+
+@<Create Components@>
+
+pdk resolve -m apache.xml >changes.txt
+
+assert_no_meta_add() {
+    local field="$1"
+    awk -v FS="|" -v field="$1" \
+        '$1 == "meta-add" && $5 == field { print; exit 1}' \
+        <changes.txt \
+        || fail "found forbidden meta-add field $1"
+}
+
+assert_no_meta_add size
+assert_no_meta_add raw-filename
+assert_no_meta_add deb.directory
+
+mkdir junk
+pushd junk
+pdk resolve ../apache.xml
+
+test -f apache.xml && bail "Rewritten file in wrong dir"
+popd
+
+@<Verify Component@>
+
+pdk download apache.xml
+
+pdk download apache.xml 2>stderr.txt
+diff -u stderr.txt - <<EOF
+EOF
+
+@<Check Permissions@>
+
+popd
+@}
+
+@B
+
+This is how we check permissions on the cache after downloading.
+
+@$@<Check Permissions@>@M==@{
+for file in $(find etc/cache -type f); do
+    perms=$(stat -c '%a' $file)
+    [ 664 = "$perms" ] || bail "wrong permissions $perms for $file"
+done
+
+# Make sure the timestamps match the original files.
+compare_timestamps \
+    ${PACKAGES}/apache2-common_2.0.53-5_i386.deb \
+    etc/cache/md5/5a/md5:5acd04d4cc6e9d1530aad04accdc8eb5
+compare_timestamps \
+    ${PACKAGES}/apache2_2.0.53-5.dsc \
+    etc/cache/md5/d9/md5:d94c995bde2f13e04cdd0c21417a7ca5
+compare_timestamps \
+    ${PACKAGES}/apache2_2.0.53-5.diff.gz \
+    etc/cache/md5/0d/md5:0d060d66b3a1e6ec0b9c58e995f7b9f7
+compare_timestamps \
+    ${PACKAGES}/apache2_2.0.53.orig.tar.gz \
+    etc/cache/md5/40/md5:40507bf19919334f07355eda2df017e5
+
+@}
+
+@B
+
+Use of references that have no name field should still result in a
+successful resolve.
+
+@$@<Nameless Reference@>==@{
+pdk workspace create nameless
+pushd nameless
+
+make_channel channel-1 ida_2.01-1.2_arm.deb ida_2.01-1.2.diff.gz \
+    ida_2.01-1.2.dsc ida_2.01.orig.tar.gz
+
+cat >etc/channels.xml <<EOF
+<?xml version="1.0"?>
+<channels>
+  <channel-1>
+    <type>dir</type>
+    <path>$(pwd)/channel-1</path>
+  </channel-1>
+</channels>
+EOF
+
+pdk channel update
+
+cat >nameless.xml <<EOF
+<component>
+  <contents>
+    <dsc/>
+  </contents>
+</component>
+EOF
+
+pdk resolve nameless.xml
+
+diff -u - nameless.xml <<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<component>
+  <contents>
+    <dsc>
+      <deb ref="md5:fe2f5a4e8d4e7ae422e71b5bdfaa1e9c">
+        <name>ida</name>
+        <version>2.01-1.2</version>
+        <arch>arm</arch>
+      </deb>
+      <dsc ref="md5:64863d0fde185cc7e572556729fa6f33">
+        <name>ida</name>
+        <version>2.01-1.2</version>
+      </dsc>
+    </dsc>
+  </contents>
+</component>
+EOF
+
+popd
+
+@}
+
+@B
+
+Some components are meant only to contain metadata. Resolving them should
+be a noop. For now we aren't making it an error. In the big deep future we
+may make resolve recursive, and the noop behavior would just work.
+
+@$@<Resolveproof Components@>==@{
+
+pdk workspace create no-resolve
+pushd no-resolve
+
+make_channel channel-1 apache2_2.0.53-5.diff.gz apache2_2.0.53-5.dsc \
+    apache2_2.0.53.orig.tar.gz apache2-common_2.0.53-5_i386.deb
+
+cat >etc/channels.xml <<EOF
+<?xml version="1.0"?>
+<channels>
+  <channel-1>
+    <type>dir</type>
+    <path>$(pwd)/channel-1</path>
+  </channel-1>
+</channels>
+EOF
+
+pdk channel update
+
+cat >no-resolve.xml <<EOF
+<component>
+  <meta>
+    <no-resolve>1</no-resolve>
+  </meta>
+  <contents>
+    <dsc>
+      <name>apache2</name>
+      <meta>
+        <link>
+          <vuln>CAN-31</vuln>
+        </link>
+      </meta>
+    </dsc>
+  </contents>
+</component>
+EOF
+
+pdk resolve no-resolve.xml
+
+diff -u - no-resolve.xml <<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<component>
+  <meta>
+    <no-resolve>1</no-resolve>
+  </meta>
+  <contents>
+    <dsc>
+      <name>apache2</name>
+      <meta>
+        <link>
+          <vuln>CAN-31</vuln>
+        </link>
+      </meta>
+    </dsc>
+  </contents>
+</component>
+EOF
+
+popd
+
+@}
+
+@B
+
+Rpm-md channels work in a similar manner to the others, so we won't be as
+thorough in testing them. We will go ahead and run then through the basics
+though.
+
+First we manually create a repository.
+
+@$@<Rpm-md Channels@>+=@{
+
+pdk workspace create rpm-md
+pushd rpm-md
+    mkdir md-repo
+    cp $PACKAGES/adjtimex-1.13-12.*.rpm md-repo
+    mkdir md-repo/deeper-subdir
+    cp $PACKAGES/nosrc-test-*.rpm md-repo/deeper-subdir
+    createrepo md-repo
+@}
+
+Next we set up an rpm-md channel.
+
+@$@<Rpm-md Channels@>+=@{
+
+    cat >etc/channels.xml <<EOF
+<channels>
+  <rpms>
+    <type>rpm-md</type>
+    <path>file://$tmp_dir/rpm-md/md-repo/</path>
+  </rpms>
+</channels>
+EOF
+
+    pdk channel update
+
+@}
+
+No we can set up an resolve a component.
+
+@$@<Rpm-md Channels@>+=@{
+    cat >rpm-resolve.xml <<EOF
+<component>
+  <contents>
+    <srpm>adjtimex</srpm>
+    <srpm>nosrc-test</srpm>
+  </contents>
+</component>
+EOF
+    pdk resolve rpm-resolve.xml
+
+    diff -u - rpm-resolve.xml <<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<component>
+  <contents>
+    <srpm>
+      <name>adjtimex</name>
+      <rpm ref="sha-1:02ac15163b67c7af4b1b188b5015e6fdef2ca871">
+        <name>adjtimex</name>
+        <version>0-1.13-12</version>
+        <arch>i386</arch>
+      </rpm>
+      <srpm ref="sha-1:42013a0008921e9b344cc07823392fbbc4ec080d">
+        <name>adjtimex</name>
+        <version>0-1.13-12</version>
+      </srpm>
+    </srpm>
+    <srpm>
+      <name>nosrc-test</name>
+      <rpm ref="sha-1:a8580963983466c18fb19c36be7ffca2e00cfa25">
+        <name>nosrc-test</name>
+        <version>0-1-1</version>
+        <arch>i386</arch>
+      </rpm>
+      <srpm ref="sha-1:f5eb0e1eac97cb1c6178fd759c4d17efaf224183">
+        <name>nosrc-test</name>
+        <version>0-1-1</version>
+      </srpm>
+    </srpm>
+  </contents>
+</component>
+EOF
+    pdk repogen rpm-resolve.xml
+    find repo | LANG=C sort >filelist.txt
+    diff -u - filelist.txt <<EOF
+repo
+repo/adjtimex-1.13-12.i386.rpm
+repo/adjtimex-1.13-12.src.rpm
+repo/nosrc-test-1-1.i386.rpm
+repo/nosrc-test-1-1.nosrc.rpm
+EOF
+popd
+
+@}
+
+@B@<Test Outline@>
+
+This is the macro wrapper for the test.
+
+@O@<atest/resolve.fw.sh@>==@{
+@<Prep work@>
+@<Rpm-md Channels@>
+@<Resolveproof Components@>
+@<Nameless Reference@>
+@<Dir Channel Test@>
+@<Apt Channel Test@>
+@}
+@! vim:set ai et sw=4 ts=4 tw=75:

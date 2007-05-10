@@ -1,0 +1,368 @@
+@! $Progeny$
+@!
+@!   Copyright 2006 Progeny Linux Systems, Inc.
+@!
+@!   This file is part of PDK.
+@!
+@!   PDK is free software; you can redistribute it and/or modify it
+@!   under the terms of the GNU General Public License as published by
+@!   the Free Software Foundation; either version 2 of the License, or
+@!   (at your option) any later version.
+@!
+@!   PDK is distributed in the hope that it will be useful, but WITHOUT
+@!   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+@!   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+@!   License for more details.
+@!
+@!   You should have received a copy of the GNU General Public License
+@!   along with PDK; if not, write to the Free Software Foundation,
+@!   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+@p indentation = none
+
+@A@<The PDK API in Five Minutes@>
+
+The PDK API is fairly simple for a variety of tasks.
+
+This document should give you a five minute introduction, showing useful
+examples, and point to the proper places in the api documentation to do
+more in-depth reading to become more proficient.
+
+The notation used in the examples below may seem funny at first glance.
+Example files are surrounded in "here documents" piped to cat and diff.
+Normally as a developer you wouldn't do that. These examples are run though
+a shell to make sure that they actually work as advertised. You can
+mentally strip off some of the piping and just run the commands and look at
+the output on a terminal. So in case you wonder why I pipe to files and
+then invoke diff on them, no, you don't have to do that. :-)
+
+@t table_of_contents
+
+@B@<A Simple Example@>
+
+To begin with, lets start with something simple. We already have a
+workspace with some components in it. Perhaps we checked out Componentized
+Linux, or built it up ourselves from scratch.
+
+At any rate, lets print to standard out all the package names in a
+component.
+
+Boilierplate Steps:
+
+1. Get a component filename from the envrionment. We pass it in as a
+command line argument.
+
+2. Reorient the filename. The PDK API assumes all filenames are relative to
+the base of the workspace directory. The Workspace class provides a utilty
+function for this which we use here.
+
+3. Get a component descriptor. (More on this later.)
+
+4. Grab a cache. (More on this later.)
+
+5. Invoke load() on the component descriptor. Now you have a usable
+component.
+
+Meat Steps:
+
+1. Iterate over the component's contents.
+
+2. Print stuff.
+
+Not too bad. Here's how it looks:
+
+@$@<Simple Name Script@>+=@{
+cat >names.py <<EOF
+# boilerplate
+import sys
+from pdk.workspace import current_workspace
+
+raw_component_filename = sys.argv[1]
+ws = current_workspace()
+component_filename = ws.reorient_filename(raw_component_filename)
+descriptor = ws.get_component_descriptor(component_filename)
+cache = ws.world.get_backed_cache(ws.cache)
+component = descriptor.load(cache)
+
+# meat
+for package in component.iter_packages():
+    print package.name, package.version.full_version, package.role
+
+EOF
+@}
+
+Now let's try the thing out:
+
+@$@<Simple Name Script@>+=@{
+python names.py progeny.com/apache.xml >output.txt
+
+diff -u - output.txt <<EOF
+apache2-common 2.0.53-5 binary
+apache2 2.0.53-5 source
+EOF
+
+@}
+
+Nothing terribly impressive, especially considering that the test data used
+in this example has few packages.
+
+What fields are available on the package? Run pydoc pdk.package and look at
+the attributes for the following three classes: Package, DebianVersion,
+RPMVersion. Also, note that Package is itself a dict, and has some more
+interesing fields available there. These dict fields are where metadata
+lands when all the pdk metadata processing is done.
+
+@B@<Entity Links@>
+
+Now we get a little trickier. This time we are going to set up some entity
+links and show how to access the linked entities from a script. Again, we
+are just going to print out some data fields.
+
+@$@<Linked Entities Script@>+=@{
+cat >entity-links.py <<EOF
+# boilerplate
+import sys
+from pdk.workspace import current_workspace
+
+raw_component_filename = sys.argv[1]
+ws = current_workspace()
+component_filename = ws.reorient_filename(raw_component_filename)
+descriptor = ws.get_component_descriptor(component_filename)
+cache = ws.world.get_backed_cache(ws.cache)
+component = descriptor.load(cache)
+
+# meat
+for package in component.iter_packages():
+    print package.name, package.version.full_version, package.role
+    for link_key in package.links:
+        entity = component.entities[link_key]
+        print '    ', entity.ent_type, entity.ent_id, \
+            entity['pdk', 'description']
+
+EOF
+@}
+
+Ok. Let's set up a few links we can try this out on:
+
+@$@<Linked Entities Script@>+=@{
+cat >some-entities.py <<EOF
+<component>
+  <contents>
+    <dsc>
+      <name>apache2</name>
+      <meta>
+        <link>
+          <bug>0098</bug>
+        </link>
+      </meta>
+    </dsc>
+    <component>progeny.com/apache.xml</component>
+  </contents>
+  <entities>
+    <bug id="0098">
+      <description>Woo, bad bad bad.</description>
+    </bug>
+  </entities>
+</component>
+EOF
+
+python entity-links.py some-entities.py >output.txt
+
+diff -u - output.txt <<EOF
+apache2-common 2.0.53-5 binary
+apache2 2.0.53-5 source
+     bug 0098 Woo, bad bad bad.
+EOF
+@}
+
+Notice that the only difference in the script was the addition of a loop on
+the package.links data. The way the data in package.links is handled seems
+a little cumbersome to me, so I may change this a little in the future. I
+like the fact that it can be iterated over, but it might make more sense
+for the entities to be the direct result of the iteration, and not require
+a separate lookup step. We shall see.
+
+@B@<Working with Actual Package Files.@>
+
+The "cache" object has been used in the earlier scripts without any
+explanation. Here's where it matters. The "backed cache" that was
+instantiated earlier is a hack to make it so that you can work with
+packages before you download them. Backed cache is short for "channel
+backed cache." This is used for doing semdiff, resolve, upgrade, etc.
+However when it comes time to actually build repositories or work with the
+files themselves, we use the "real" cache.
+
+So this time we are going to put packages in a directory.
+
+@$@<Play with Packages Script@>+=@{
+cat >make-simple-repo.py <<EOF
+# boilerplate
+import sys
+from pdk.workspace import current_workspace
+
+raw_component_filename = sys.argv[1]
+ws = current_workspace()
+component_filename = ws.reorient_filename(raw_component_filename)
+descriptor = ws.get_component_descriptor(component_filename)
+ws.download([descriptor])
+cache = ws.cache
+component = descriptor.load(cache)
+
+# meat
+import os
+directory = sys.argv[2]
+os.makedirs(directory)
+for package in component.iter_packages():
+    all_files = [ package.filename ] + \
+        [ f[2] for f in package.extra_files ]
+    for filename in all_files:
+        filepath = os.path.join(directory, filename)
+        print filepath
+        os.link(cache.file_path(package.ent_id), filepath)
+
+EOF
+
+python make-simple-repo.py progeny.com/apache.xml repo
+
+find repo | LANG=C sort >output.txt
+
+diff -u - output.txt <<EOF
+repo
+repo/apache2-common_2.0.53-5_i386.deb
+repo/apache2_2.0.53-5.diff.gz
+repo/apache2_2.0.53-5.dsc
+repo/apache2_2.0.53.orig.tar.gz
+EOF
+@}
+
+The only thing tricky to note here is the need to handle the extra_files
+attribute on package. This is actually a tuple with ent_id, size, and
+filename for all the extra files. This is only used by Debian source
+packages. Also notice the use of cache.file_path. It returns a path to the
+actual file object in the pdk cache which you can hard link to. We use hard
+links in repogen, and so do all the other cool kids when doing this kind of
+work. Feel the peer pressure.
+
+@B@<Working with Component Descriptors@>
+
+Along the way to all the component work we've done until now, we
+instantiated and then ignored a component descriptor object. This object is
+useful for real work if you intend to modify descriptors programatically.
+
+Here is a short example. All it does is remove a concrete package
+refrence. You will need to consult pydoc pdk.component and maybe even read
+a little code in that module to really make use of it, but for the moment,
+here is a little something to get you started:
+
+@$@<Change a Component Descriptor@>==@{
+cat >changeit.py <<EOF
+# boilerplate
+import sys
+from pdk.workspace import current_workspace
+
+raw_component_filename = sys.argv[1]
+ws = current_workspace()
+component_filename = ws.reorient_filename(raw_component_filename)
+descriptor = ws.get_component_descriptor(component_filename)
+
+# meat
+del descriptor.contents[0].children[1]
+descriptor.write()
+EOF
+
+# ---------------------------------
+# Before
+# ---------------------------------
+
+cp progeny.com/apache.xml changeme.xml
+
+diff -u - changeme.xml <<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<component>
+  <contents>
+    <dsc>
+      <name>apache2</name>
+      <deb ref="md5:5acd04d4cc6e9d1530aad04accdc8eb5">
+        <name>apache2-common</name>
+        <version>2.0.53-5</version>
+        <arch>i386</arch>
+      </deb>
+      <dsc ref="md5:d94c995bde2f13e04cdd0c21417a7ca5">
+        <name>apache2</name>
+        <version>2.0.53-5</version>
+      </dsc>
+    </dsc>
+  </contents>
+</component>
+EOF
+
+# ---------------------------------
+# Run the script...
+# ---------------------------------
+
+python changeit.py changeme.xml
+
+# ---------------------------------
+# After
+# ---------------------------------
+
+diff -u - changeme.xml <<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<component>
+  <contents>
+    <dsc>
+      <name>apache2</name>
+      <deb ref="md5:5acd04d4cc6e9d1530aad04accdc8eb5">
+        <name>apache2-common</name>
+        <version>2.0.53-5</version>
+        <arch>i386</arch>
+      </deb>
+    </dsc>
+  </contents>
+</component>
+EOF
+
+@}
+
+To do more complex things you will probably need to dig into the
+PackageStanza and Condition classes. The ComponentDescriptor class has a
+number of build_* methods used in building up PackageStanzas. These are
+useful examples. Those ultimately populate the contents and
+contents[int].children lists.
+
+The short explanation is that the contents field contains PackageStanzas.
+The stanzas children field contains more PackageStanzas. This corresponds
+to the structure of the component descriptor xml.
+
+PackageStanzas themselves contain Conditions and meta fields and ultimately
+create Rules... and it gets pretty complicated from there. You can do some
+work without understanding all of it though. Just expect to have to read
+some PDK code to see what we've done for examples.
+
+@B@<Conclusion@>
+
+Hopefully this gets you started handling some edge cases specific to your
+distro and maybe even reading and understanding the pdk commands in
+pdk.workspace.
+
+Enjoy, happy hacking, and start sending me patches!
+
+@B@<Test Outline@>
+
+This is the macro wrapper for the test.
+
+@O@<atest/api-in-5min.fw.sh@>==@{
+. atest/utils/repogen-fixture.sh
+
+set_up_repogen_fixture link-report
+pushd link-report
+
+@<Simple Name Script@>
+@<Linked Entities Script@>
+@<Play with Packages Script@>
+@<Change a Component Descriptor@>
+
+popd
+
+@}
+@! vim:set ai et sw=4 ts=4 tw=75:

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<component>
+  <meta>
+    <apt-deb.origin>community</apt-deb.origin>
+    <apt-deb.label>distro</apt-deb.label>
+    <apt-deb.version>1.0</apt-deb.version>
+    <apt-deb.codename>zip</apt-deb.codename>
+    <apt-deb.suite>stable</apt-deb.suite>
+    <apt-deb.date>Tue, 22 Mar 2005 21:20:00 +0000</apt-deb.date>
+    <apt-deb.description>Hello World!</apt-deb.description>
+  </meta>
+  <contents>
+    <component>main.xml</component>
+  </contents>
+</component>

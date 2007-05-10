@@ -1,0 +1,13 @@
+$Progeny$
+
+To run the acceptance tests, install all the packages named under the pdk
+package suggests field. Then untar the atest.tar.gz file.
+
+For instance:
+
+tar zxvf atest.tar.gz
+mkdir atest/packages
+# Populate the atest/packages directory.
+# For more info see atest/00data-catalog.sh.
+# After you have done that:
+python utest.py && sh run_atest -I

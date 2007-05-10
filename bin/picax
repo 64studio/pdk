@@ -1,0 +1,143 @@
+#!/usr/bin/python
+#
+# $Progeny$
+#
+# Split a repository into parts.
+#
+#   Copyright 2003, 2004, 2005 Progeny Linux Systems, Inc.
+#
+#   This file is part of PDK.
+#
+#   PDK is free software; you can redistribute it and/or modify it
+#   under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   PDK is distributed in the hope that it will be useful, but WITHOUT
+#   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+#   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+#   License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with PDK; if not, write to the Free Software Foundation,
+#   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+# This script splits a repository into N parts, each approximately the
+# same size, such that adding each part to an apt sources.list is the
+# same as adding the original whole.  Options exist for adding an apt
+# CD label, for specifying the architecture, and for providing a
+# package order list, among other things.  "picax --help" or the man
+# page should give a good overview.
+#
+# Due to the use of several new features, this script requires Python
+# 2.3 or later.
+
+import sys
+import traceback
+
+import picax.config
+import picax.apt
+import picax.installer
+import picax.media
+import picax.package
+import picax.log
+import picax.order
+import picax.split
+import picax.newrepo
+
+import pdb
+
+# Main function
+
+def main():
+    "Main function."
+
+    # Retrieve the configuration.
+
+    try:
+        picax.config.handle_args(sys.argv[1:])
+    except picax.config.ConfigError:
+        sys.stderr.write("Configuration system failed\n")
+        sys.exit(1)
+
+    # Turn on debugging if requested.
+
+    global_conf = picax.config.get_config()
+    debug = global_conf["debug"]
+    if debug:
+        pdb.set_trace()
+
+    # Build the media.
+
+    try:
+        # Set up the rest of picax.
+
+        log = picax.log.get_logger()
+        picax.apt.init()
+
+        # Read the packages file for the source distro, calculating
+        # total size of all packages.
+
+        log.info("Reading indexes")
+
+        (package_list, source_list) = \
+            picax.package.get_all_distro_packages()
+
+        # Put the installer on the media, if any, and register the space
+        # used.
+
+        log.info("Setting up installers")
+        first_part_space = picax.installer.install()
+
+        # Create an order list.
+
+        log.info("Calculating order")
+
+        order_list = picax.order.order(package_list)
+
+        # Figure out which packages belong in which parts, putting
+        # them into the package_group[part] arrays.
+
+        log.info("Separating packages into media groups")
+
+        package_group = picax.split.split(order_list, package_list,
+                                          source_list, first_part_space)
+
+        # Write the packages information into the parts.
+
+        log.info("Writing packages into media groups")
+
+        for part in range(0, len(package_group)):
+            log.info("Writing group %d" % (part + 1,))
+
+            current_group = package_group[part]
+            top_path = "%s/bin%d" % (global_conf["dest_path"], part + 1)
+
+            newrepo = picax.newrepo.NewRepository(current_group, top_path)
+            newrepo.write_repo()
+
+        # After installing the parts, run the post-installation
+        # setup for the installer.
+
+        log.info("Finishing installer setup")
+        picax.installer.post_install()
+
+        # Build media if necessary.
+
+        picax.media.create_media()
+
+    except Exception:
+
+        # Generic error handling code for any problems.
+
+        log.exception("An error occurred during the build process")
+        if debug:
+            traceback.print_exc(None, sys.stderr)
+            pdb.post_mortem(sys.exc_info()[2])
+        else:
+            picax.config.usage(sys.stderr)
+
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component>
+  <contents>
+    <deb>
+      <name>emacs-defaults</name>
+      <version>1.1</version>
+      <arch>all</arch>
+    </deb>
+  </contents>
+</component>

@@ -1,0 +1,85 @@
+@! $Progeny$
+@!
+@!   Copyright 2005 Progeny Linux Systems, Inc.
+@!
+@!   This file is part of PDK.
+@!
+@!   PDK is free software; you can redistribute it and/or modify it
+@!   under the terms of the GNU General Public License as published by
+@!   the Free Software Foundation; either version 2 of the License, or
+@!   (at your option) any later version.
+@!
+@!   PDK is distributed in the hope that it will be useful, but WITHOUT
+@!   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+@!   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+@!   License for more details.
+@!
+@!   You should have received a copy of the GNU General Public License
+@!   along with PDK; if not, write to the Free Software Foundation,
+@!   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+@p indentation = none
+
+@A@<Semdiff In Subdir@>
+
+In this test we run version control semdiff on a component which is in
+a subdirectory. This catches a regression where semdiff wasn't able to
+find the version controlled file if it was in a subdirectory.
+
+@t table_of_contents
+
+@B
+
+The meat of the test is simple. Resolve a component, and semdiff it
+with itself. Don't run download before semdiff.
+
+@$@<Verify Semdiff Works@>@M==@{
+
+mkdir progeny.com
+cat >progeny.com/emacs.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <dsc>emacs-defaults</dsc>
+  </contents>
+</component>
+EOF
+
+pdk commit -m 'old version' progeny.com/emacs.xml
+
+pdk resolve -R progeny.com/emacs.xml
+pdk semdiff progeny.com/emacs.xml
+
+@}
+
+@B@<Test Outline@>
+
+This is the macro wrapper for the test.
+
+@O@<atest/semdiff-in-subdir.fw.sh@>==@{
+pdk workspace create semdiff
+pushd semdiff
+
+mkdir channel-1
+cp \
+    ${PACKAGES}/emacs-defaults_1.1_all.deb \
+    ${PACKAGES}/emacs-defaults_1.1.dsc \
+    ${PACKAGES}/emacs-defaults_1.1.tar.gz \
+    channel-1
+
+cat >etc/channels.xml <<EOF
+<?xml version="1.0"?>
+<channels>
+  <channel-1>
+    <type>dir</type>
+    <path>channel-1</path>
+  </channel-1>
+</channels>
+EOF
+
+pdk channel update
+
+@<Verify Semdiff Works@>
+popd semdiff
+@}
+@! vim:set ai et sw=4 ts=4 tw=75:

@@ -1,0 +1,740 @@
+@! $Progeny$
+@!
+@!   Copyright 2005, 2006 Progeny Linux Systems, Inc.
+@!
+@!   This file is part of PDK.
+@!
+@!   PDK is free software; you can redistribute it and/or modify it
+@!   under the terms of the GNU General Public License as published by
+@!   the Free Software Foundation; either version 2 of the License, or
+@!   (at your option) any later version.
+@!
+@!   PDK is distributed in the hope that it will be useful, but WITHOUT
+@!   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+@!   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+@!   License for more details.
+@!
+@!   You should have received a copy of the GNU General Public License
+@!   along with PDK; if not, write to the Free Software Foundation,
+@!   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+@p indentation = none
+
+@A@<Local Version Control Commands@>
+
+In this test we verify version control commands that operate only on a
+local repository.
+
+While git is very capable foundation to build a vc system on, it pays
+little homage to CVS and SVN, which most people are familiar with.
+
+In pdk we try to mimic CVS and SVN enough that people will be
+immediately comfortable with the interface.
+
+In a few cases this is easier said than done.
+
+This test runs commands through their basic uses, and serves as a
+place to park regression tests as mismatches are discovered.
+
+Note: We make sure that our test file "modifications" actually change
+the size of the file in question. At the moment git has a "race" that
+scripts can trigger if they update files more than once per second
+without changing their sizes. This is not a big problem in interactive
+use, so we are going to wait on the git folks to work this out on
+their own, or just not worry about it. The simple workaround is for
+script writers to invoke git-update-index when they change files.
+
+@t table_of_contents
+
+@B
+
+Before we get into the command tests, this function needs
+explanation. It is used by a number of tests to verify a whole bunch
+of expected state all at once.
+
+It makes quite a few assumptions in order to give us a compact way to
+notate our expected state.
+
+There are four "known" files: file-a through file-d. The line count of
+each file is concatenated to a single file, then compared to
+@{$expected@}.
+
+This works because we assume that the only way to modify a file is to
+concatenate a line to the end of it.
+
+We also assume stdin contains expected pdk status lines. We put
+both the expected line counts and status info together into actual and
+expected files and diff them. If there is a mismatch, the given
+message is used in the test failure message.
+
+@$@<Assert Status@>==@{
+
+assert_status() {
+    set +x
+    local message="$1"
+    local expected=$tmp_dir/expected_status
+    local actual=$tmp_dir/actual_status
+    shift
+
+    echo $* '' >$expected
+    cat >>$expected
+
+    echo -n >$actual
+    for suffix in a b c d; do
+        file=file-$suffix
+        echo -n $(wc -l <$file) '' >>$actual
+    done
+    echo >>$actual
+    pdk status >>$actual
+
+    diff -u $expected $actual \
+        || fail "status mismatch: $message"
+    set -x
+}
+
+@}
+
+@B
+
+Add and commit are among the tougher commands to make act like SVN.
+
+This test series is fairly comprehensive, and should cover most corner
+cases.
+
+Important points addressed:
+
+Commit allows the user to implicitly add files when files are named on
+the command line. Giving no file on the command line commits changes
+to known files and new files previously noted with pdk add.
+
+Commit allows messages to come from files, stdin, raw command line
+options, and, by default, @{$EDTIOR@}.
+
+@$@<Add and Commit@>+=@{
+pdk workspace create add-and-commit
+pushd add-and-commit
+
+    echo info >>file-a
+    echo info >>file-b
+    echo info >>file-c
+    echo info >>file-d
+    pdk add file-a
+    echo "Initial Commit" | pdk commit -f -
+    assert_status "after add + raw" 1 1 1 1 <<EOF
+?@^H(09)file-b
+?@^H(09)file-c
+?@^H(09)file-d
+EOF
+
+    echo info >>file-a
+    echo "Add comment." | pdk commit -f -
+    assert_status "after change + raw" 2 1 1 1 <<EOF
+?@^H(09)file-b
+?@^H(09)file-c
+?@^H(09)file-d
+EOF
+
+    echo info >>file-b
+    echo "Add file file-b" | pdk commit -f - file-b
+    assert_status "after commit + file, not added" 2 2 1 1 <<EOF
+?@^H(09)file-c
+?@^H(09)file-d
+EOF
+
+    echo info >>file-c
+    pdk add file-c
+    echo "Add file file-c" | pdk commit -f - file-c
+    assert_status "after commit + file, already added" 2 2 2 1 <<EOF
+?@^H(09)file-d
+EOF
+
+    echo info >>file-a
+    echo info >>file-d
+    pdk add file-d
+    echo "Modify file-a" | pdk commit -f - file-a
+    assert_status "after commit + file, another file added then changed" \
+        3 2 2 2 <<EOF
+A@^H(09)file-d
+EOF
+
+    echo info >>file-d
+    echo "Add file-d" | pdk commit -f -
+    assert_status "after commit raw, added file changed" 3 2 2 3 <<EOF
+EOF
+
+@}
+
+Here is where we test @{$EDITOR@} and giving the commit message right
+on the command line.
+
+@$@<Add and Commit@>+=@{
+    cat >$tmp_dir/bin/fake_editor <<EOF
+cat >\$1 <<MSG
+message produced by fake editor
+MSG
+EOF
+    chmod +x $tmp_dir/bin/fake_editor
+    EDITOR=fake_editor
+    export EDITOR
+    echo info >>file-a
+    pdk commit
+    unset EDITOR
+    assert_status "after commit with EDITOR" 4 2 2 3 <<EOF
+EOF
+    git-cat-file commit HEAD | grep fake
+
+    echo info >>file-a
+    pdk commit -m 'Message from command line.'
+    assert_status "after commit with EDITOR" 5 2 2 3 <<EOF
+EOF
+    git-cat-file commit HEAD | grep "command line"
+
+popd
+
+@}
+
+@B
+
+This little test watches for a regression where you couldn't do an
+initial commit by naming files with the commit command.
+
+@$@<Commit Regression: Initial Cmd Line@>==@{
+pdk workspace create commit-reg-initial-cmd-line
+pushd commit-reg-initial-cmd-line
+    echo info >>file-a
+    pdk commit -m 'Initial commit' file-a
+popd
+
+@}
+
+@B
+
+Another commit regression, this one where you coudn't commit named files
+when in a subdirectory.
+
+We test it both for initial commit and subsequent commit.
+
+@$@<Commit Regression: In Subdir@>==@{
+pdk workspace create commit-reg-subdir-1
+pushd commit-reg-subdir-1
+    mkdir subdir
+    echo info >>subdir/file-a
+    pdk commit -m 'test regression' subdir/file-a
+    pushd subdir
+    echo info >>file-a
+    pdk commit -m 'test regression' file-a
+    popd
+popd
+
+pdk workspace create commit-reg-subdir-2
+pushd commit-reg-subdir-2
+    mkdir subdir
+    pushd subdir
+    echo info >>file-a
+    pdk commit -m 'test regression' file-a
+    echo info >>file-a
+    pdk commit -m 'test regression' file-a
+    popd
+popd
+
+@}
+
+@B
+
+This is another little test to make sure that pdk add and commit
+respect multiple arguments.
+
+@$@<Add and Commit: Multiple Arguments@>==@{
+
+pdk workspace create add-and-commit-multi-arg
+pushd add-and-commit-multi-arg
+    echo 1 >>file-a
+    echo 1 >>file-b
+    echo 1 >>file-c
+    echo 1 >>file-d
+    pdk add  file-a file-b
+    pdk commit -m "multi arg add"
+    assert_status "after add + raw" 1 1 1 1 <<EOF
+?@^H(09)file-c
+?@^H(09)file-d
+EOF
+
+    pdk commit -m "multi arg commit" file-b file-c file-d
+    assert_status "after add + raw" 1 1 1 1 <<EOF
+EOF
+popd
+
+@}
+
+@B
+
+Note: eventually we plan to remove update.
+
+Here we just double check that calling update restores a deleted
+file. It's really not that interesting and we plan to kill it off
+someday, as update doesn't make a lot of sense in a distributed
+version control system.
+
+
+@$@<Update@>@Z==@{
+pdk workspace create update
+pushd update
+
+    echo info >>file-a.txt
+
+    pdk add file-a.txt
+    pdk commit -m 'Jam Session 5 testing'
+
+    rm file-a.txt
+    pdk update
+    diff -u - file-a.txt <<EOF
+info
+EOF
+
+popd
+@}
+
+@B
+
+This test of remove functionality tries to verify a lot of corner
+cases. It also uses the rm alias sometimes.
+
+@$@<Remove@>==@{
+pdk workspace create remove
+pushd remove
+    echo info >>file-a
+    pdk commit -m 'Initial Commit' file-a
+
+    pdk remove file-a || status=$?
+    [ -f 'file-a' ] \
+        || fail 'file-a should still exist after pdk remove.'
+    [ "$status" = 4 ] || fail 'pdk remove should fail when file exists'
+
+    rm file-a
+    pdk remove file-a
+    pdk status >../output.txt
+    diff -u - ../output.txt <<EOF
+D@^H(09)file-a
+EOF
+    pdk commit -m 'remove file-a'
+
+    pdk status >../output.txt
+    diff -u - ../output.txt <<EOF
+EOF
+
+    echo info >>file-a
+    pdk commit -m 'add it back' file-a
+    rm file-a
+    pdk rm file-a
+    pdk status >../output.txt
+    diff -u - ../output.txt <<EOF
+D@^H(09)file-a
+EOF
+    pdk commit -m 'remove it with commit arg.' file-a
+    pdk status >../output.txt
+    diff -u - ../output.txt <<EOF
+EOF
+
+
+    echo info >>file-a
+    echo info >>file-b
+
+    pdk commit -m 'add two files: file-a file-b' file-a file-b
+    rm file-a
+    pdk commit -m 'rm file-a with args only' file-a \
+        && fail 'should not be able to rm with args only'
+    pdk status >../output.txt
+    diff -u - ../output.txt <<EOF
+!@^H(09)file-a
+EOF
+
+    rm file-b
+    pdk remove file-a file-b
+    pdk commit -m 'rm both files at once.'
+
+    pdk status >../output.txt
+    diff -u - ../output.txt <<EOF
+EOF
+
+    # Wild corner case: Remove a file and delete the directory it is
+    # in, then commit.
+
+    mkdir somedir
+    echo info >>somedir/delete-me
+    pdk commit -m 'put one file in a directory' somedir/delete-me
+    rm -r somedir
+    pdk remove somedir/delete-me
+    pdk commit -m 'remove the file and the directory at the same time'
+    pdk status >../output.txt
+    diff -u - ../output.txt <<EOF
+EOF
+
+    # Use of the '-f' force option:
+
+    echo info >>force-remove
+    pdk commit -m 'Before force remove' force-remove
+    pdk remove -f force-remove
+    [ -e force-remove ] && fail 'pdk remove -f should unlink file'
+    pdk status >../output.txt
+    diff -u - ../output.txt <<EOF
+D@^H(09)force-remove
+EOF
+    pdk commit -m 'After force remove'
+    pdk status >../output.txt
+    diff -u - ../output.txt <<EOF
+EOF
+
+popd
+
+@}
+
+@B
+
+Here we do a fairly tricky revert. It modifies three files but only
+reverts two.
+
+Also, revert should "un-add" an added file.
+
+
+@$@<Revert@>==@{
+pdk workspace create revert
+pushd revert
+    echo >>file-a 1
+    echo >>file-b 1
+    echo >>file-c 1
+    pdk commit -m 'Initial Commit' file-a file-b file-c
+
+    echo >>file-a 2
+    echo >>file-b 2
+    echo >>file-c 2
+    pdk revert file-a file-c
+
+    diff -u - file-a <<EOF
+1
+EOF
+    diff -u - file-b <<EOF
+1
+2
+EOF
+    diff -u - file-c <<EOF
+1
+EOF
+
+    echo "hello" >file-d
+    pdk add file-d
+    pdk revert file-d
+
+    pdk status >../status.txt
+    diff -u - ../status.txt <<EOF
+M@^H(09)file-b
+?@^H(09)file-d
+EOF
+    pdk commit -m 'Commit'
+
+    # corner case: revert immediately after remoove
+    rm file-b
+    pdk remove file-b
+    pdk revert file-b
+
+popd
+@}
+
+@B
+
+Cat is used to grab the last committed version of a file and pipe it
+to stdout. It could be made more useful by allowing the user to cat
+particular revisions, but there are enough corner cases as it is for
+the moment.
+
+Also note the regressions we test for.
+
+@$@<Cat@>==@{
+pdk workspace create cat
+pushd cat
+    pdk cat file-a file-b 2>errors.txt || status=$?
+    [ "$status" = 2 ] || fail "cat with too many arguments should fail"
+    grep -i 'single filename' errors.txt
+
+    echo 1 >>file-a
+    pdk cat file-a 2>errors.txt || status=$?
+    [ "$status" = 4 ] || fail "cat before file-a commit should fail"
+    grep -i 'commit' errors.txt
+
+    pdk commit -m 'initial' file-a
+
+    pdk cat file-a >file-a.cat
+    diff -u - file-a.cat <<EOF
+1
+EOF
+
+    echo 2 >>file-a
+    pdk cat file-a >file-a.cat
+    diff -u - file-a.cat <<EOF
+1
+EOF
+    pdk commit -m 'add 2'
+    pdk cat file-a >file-a.cat
+    diff -u - file-a.cat <<EOF
+1
+2
+EOF
+
+    # watch for regression where cat only looks at the git index.
+    echo 3 >>file-a
+    GIT_INDEX_FILE=etc/git/pdk/pdk-index git-update-index file-a
+    pdk cat file-a >file-a.cat
+    diff -u - file-a.cat <<EOF
+1
+2
+EOF
+    pdk commit -m 'add 3'
+    pdk cat file-a >file-a.cat
+    diff -u - file-a.cat <<EOF
+1
+2
+3
+EOF
+
+    pdk cat file-b 2>errors.txt || status=$?
+    [ "$status" = 4 ] || fail "cat unknown file should fail"
+    grep -i 'no file' errors.txt
+
+    # watch for regression where cat doesn't work in subdirectories.
+    mkdir subdir
+    echo 1 >>subdir/file-b
+    pdk commit -m 'add file-b in subdir' subdir/file-b
+    echo 2 >>subdir/file-b
+    pdk cat subdir/file-b >file-b.cat
+    diff -u - file-b.cat <<EOF
+1
+EOF
+
+popd
+
+@}
+
+@B
+
+The status command shows the vc status of all the local files.
+
+It is heavily dependent on git status and will tend to suffer from its
+quirks.
+
+Here we show how status reacts to workspaces which are clean,
+modified, and clean but still containing extra files.
+
+The status command can detect renames.
+
+@$@<Status@>==@{
+pdk workspace create status
+pushd status
+    # don't recurse into unknown directories
+    mkdir unknown
+    echo info >unknown/a
+    echo info >unknown/b
+    echo info >unknown/c
+    pdk status >../output.txt
+    diff -u - ../output.txt <<EOF
+?@^H(09)unknown/
+EOF
+    rm -r unknown
+
+    echo info >>file-a
+    pdk commit -m "Initial Commit" file-a
+    pdk status >../output.txt
+    diff -u - ../output.txt <<EOF
+EOF
+
+    echo info >>file-a
+    echo info >>file-b
+    pdk status >../output.txt
+    diff -u - ../output.txt <<EOF
+M@^H(09)file-a
+?@^H(09)file-b
+EOF
+
+    pdk commit -m "A Local Change"
+    pdk status >../output.txt
+    diff -u - ../output.txt <<EOF
+?@^H(09)file-b
+EOF
+
+    # try to catch a rename.
+    pdk add file-b
+    pdk commit -m 'Add file b.'
+
+    mv file-b file-c
+    pdk remove file-b
+    pdk add file-c
+    pdk status >../output.txt
+    diff -u - ../output.txt <<EOF
+R100@^H(09)file-b@^H(09)file-c
+EOF
+    pdk commit -m 'rename file-b to file-c'
+
+    # Regression: File committed as empty, then modified: Status bombs.
+    touch some-file
+    pdk add some-file
+    pdk commit -m 'initial empty'
+    pdk status
+    echo 'hello world!' >some-file
+    pdk status
+
+popd
+@}
+
+@B
+
+Right now we reject directories. Arguments to pdk vc commands should
+be files, not directories.
+
+@$@<Working With Directories (Not)@>==@{
+check_dir_failure() {
+    unset status
+    "$@@" 2>stderr.txt || local status=$?
+    cat stderr.txt
+    [ "$status" == 3 ] || fail "expected exit value 3, got $status"
+    grep director stderr.txt
+}
+
+pdk workspace create dirs
+pushd dirs
+    mkdir somedir
+    check_dir_failure pdk add somedir
+    check_dir_failure pdk commit -m 'msg' somedir/
+
+    touch somedir/a
+    pdk commit -m 'initial' somedir/a
+    check_dir_failure pdk remove somedir
+
+    check_dir_failure pdk cat somedir
+popd
+@}
+
+@B
+
+No commits yet? This is a corner case which presents a special case
+for nearly every pdk command.
+
+It is a case which naturally gets little testing, as once it has been
+passed, it never returns.
+
+Furthermore, it is the first case presented to every user. *sigh*
+
+@$@<New Repositories@>==@{
+
+pdk workspace create no-commits-allowed
+pushd no-commits-allowed
+
+    # log command
+    pdk log 2>../errors.txt || status=$?
+    [ "$status" = 3 ] || fail 'pdk log should have failed.'
+    grep -i log ../errors.txt
+
+    # empty status
+    pdk status >../status.txt
+    diff -u - ../status.txt <<EOF
+EOF
+
+    # status after adding files.
+    echo "Hello World!" >hello.txt
+    pdk add hello.txt
+    echo "Now is the time for" >>all.txt
+    pdk status >../status.txt
+    diff -u - ../status.txt <<EOF
+A@^H(09)hello.txt
+?@^H(09)all.txt
+EOF
+
+popd
+
+@}
+
+@B
+
+pdk log should output commit logs in reverse chronological order,
+modulo parallel, which should probably be grouped by line.
+
+Here we just verify the simple linear case.
+
+@$@<Commit Ordering In Log@>==@{
+pdk workspace create commit-ordering
+pushd commit-ordering
+    echo 1 >file
+    pdk commit -m '>> a' file
+    echo 2 >file
+    pdk commit -m '>> b' file
+    echo 3 >file
+    pdk commit -m '>> c' file
+    pdk log | grep '^>>' > ../log.txt
+    diff -u - ../log.txt <<EOF
+>> c
+>> b
+>> a
+EOF
+popd
+@}
+
+@B
+
+pdk mv is a convenience command which takes care of the add and remove of a
+file simultaneously.
+
+For now we don't allow invoking mv on directories.
+
+@$@<Mv@>==@{
+pdk workspace create mv-command
+mkdir mv-command/subdir
+pushd mv-command/subdir
+    echo 1 > file-a
+    pdk commit -m 'initial' file-a
+    pdk mv file-a file-b
+    pdk status >../../status.txt
+    diff -u - ../../status.txt <<EOF
+R100@^H(09)subdir/file-a@^H(09)subdir/file-b
+EOF
+    pdk commit -m 'after mv'
+    mkdir somedir
+    echo 2 > somedir/file-c
+    pdk commit -m 'add with dir' somedir/file-c
+    pdk mv somedir anotherdir 2>../../errors.txt \
+        && fail 'Command should have failed'
+    grep -q 'directory' ../../errors.txt
+    pdk mv somedir/file-c file-b 2>../../errors.txt \
+        && fail 'Command should have failed'
+    grep -q 'exist' ../../errors.txt
+popd
+@}
+@B
+
+Here's the whole test.
+
+@O@<atest/local-vc.fw.sh@>==@{
+@<Test Setup@>
+@<Mv@>
+@<Commit Regression: In Subdir@>
+@<Commit Ordering In Log@>
+@<New Repositories@>
+@<Add and Commit@>
+@<Add and Commit: Multiple Arguments@>
+@<Commit Regression: Initial Cmd Line@>
+@<Cat@>
+@<Remove@>
+@<Revert@>
+@<Update@>
+@<Status@>
+@<Working With Directories (Not)@>
+@}
+
+@B
+
+This is invoked early in the test to import utility functions.
+
+@$@<Test Setup@>==@{
+. atest/test_lib.sh
+. atest/utils/test_channel.sh
+
+@<Assert Status@>
+
+@}
+@! vim:set ai et sw=4 ts=4 tw=75:

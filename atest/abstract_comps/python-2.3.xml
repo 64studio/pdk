@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component>
+  <contents>
+    <deb>
+      <name>python</name>
+      <version>2.3.3-6</version>
+      <arch>all</arch>
+    </deb>
+  </contents>
+</component>

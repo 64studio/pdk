@@ -1,0 +1,63 @@
+@! $Progeny$
+@!
+@!   Copyright 2005 Progeny Linux Systems, Inc.
+@!
+@!   This file is part of PDK.
+@!
+@!   PDK is free software; you can redistribute it and/or modify it
+@!   under the terms of the GNU General Public License as published by
+@!   the Free Software Foundation; either version 2 of the License, or
+@!   (at your option) any later version.
+@!
+@!   PDK is distributed in the hope that it will be useful, but WITHOUT
+@!   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+@!   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+@!   License for more details.
+@!
+@!   You should have received a copy of the GNU General Public License
+@!   along with PDK; if not, write to the Free Software Foundation,
+@!   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+@p indentation = none
+
+@A@<Optimization Warning@>
+
+The resolve and upgrade commands try to be smart about narrowing the
+candidate package list by package name. When the user fails to provide
+a package name in a reference, the reference can still be resolved,
+but a large channel list will result in a lot of burnt CPU cycles.
+
+In this test we make sure that a warning is printed in this situation.
+
+@t table_of_contents
+
+@B
+
+An unoptimizable reference looks like this:
+
+@$@<Make Unoptimizable Component@>==@{
+    cat >scary.xml <<EOF
+<?xml version="1.0"?>
+<component>
+  <contents>
+    <deb/>
+  </contents>
+</component>
+EOF
+
+@}
+
+@O@<atest/optimized.fw.sh@>==@{
+
+. atest/utils/repogen-fixture.sh
+
+set_up_repogen_fixture scary
+pushd scary
+
+@<Make Unoptimizable Component@>
+    pdk resolve scary.xml 2>errors.txt
+    grep unoptimized errors.txt
+
+popd
+@}
+@! vim:set ai et sw=4 ts=4 tw=75:

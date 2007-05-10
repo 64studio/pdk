@@ -1,0 +1,29 @@
+$Progeny$
+
+This is just a rough attempt to document the contents
+of this workspace.  Any help that is volunteered toward
+this end is appreciated.
+
+~ run_atest
+Script for running acceptance tests.
+
+~ atest/
+This is where the individual acceptance tests live.
+
+* example:
+sh run_atest atest/foo.sh
+
+~ pdk/
+Import directory for python
+
+~ scripts/
+Future stuff that may or may not be working at any given point.
+
+~ setup.py
+distutils control file, "python setup.py sdist"
+
+~ bin/
+Stuff to be installed as executable scripts.
+
+~ utest.py
+master unittest invocation, soon to be displaced by a proper test framework
