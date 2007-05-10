@@ -980,6 +980,34 @@ def closure(args):
 closure = make_invokable(closure, 'arch', 'machine-readable', 'no-report',
                          'dry-run', 'channels', 'show-unchanged')
 
+def abstract(args):
+    """usage: pdk abstract COMPONENT
+
+    Creates a new abstract COMPONENT from the raw package names
+    passed with standard input
+    """
+    workspace = current_workspace()
+    get_desc = workspace.get_component_descriptor
+    component_names = args.get_reoriented_files(workspace)
+
+    contents=''
+    packages=sys.stdin.read().split("\n")
+    for package in packages:
+        if package == '':
+            continue
+        name='<name>%s</name>' % (package)
+        contents = contents + '<deb>%s</deb>' % (name)
+
+    header='<?xml version="1.0" encoding="utf-8"?>'
+    component='<id>abstract</id><contents>%s</contents>' % (contents)
+    body='<component>%s</component>' % (component)
+
+    component = ComponentDescriptor(component_names[0],StringIO(header + body))
+    component.write()
+    
+abstract = make_invokable(abstract)
+
+
 def upgrade(args):
     """\\fB%prog\\fP [\\fIOPTIONS\\fP] \\fICOMPONENTS\\fP
 .PP
