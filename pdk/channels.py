@@ -288,11 +288,12 @@ class AptDebSection(object):
     be treated as Packages or Sources.
     '''
 
-    def __init__(self, full_path, channel_file, strategy, has_release):
+    def __init__(self, full_path, channel_file, strategy, has_release, dist):
         self.full_path = full_path
         self.channel_file = channel_file
         self.strategy = strategy
         self.has_release = has_release
+        self.dist = dist
 
     def get_identity(self):
         '''Return an identity tuple for this object.'''
@@ -617,7 +618,7 @@ class OutsideWorldFactory(object):
                         full_path = '/'.join(parts)
                         channel_file = self.get_channel_file(channel_name,full_path)
                         yield AptDebSection(full_path, channel_file,
-                                            strategy, has_release)
+                                            strategy, has_release, dist)
             elif type_value == 'dir':
                 yield DirectorySection(path)
             elif type_value == 'source':
@@ -673,12 +674,12 @@ class OutsideWorld(object):
         '''Update all remote source and channel data.'''
         for channel in self.sections.keys():
             if isinstance(self.sections[channel][0], AptDebSection):
-                p = re.compile('.*/dists/[^/]*/')
+                p = re.compile('.*/dists/')
                 m = p.match(self.sections[channel][0].full_path)
-                remote_file = m.group() + 'Release'
-                p = re.compile('.*%%.*dists_[^_]*_')
+                remote_file = m.group() + self.sections[channel][0].dist + '/Release'
+                p = re.compile('.*%%.*dists_')
                 m = p.match(self.sections[channel][0].channel_file)
-                local_file = m.group() + 'Release'
+                local_file = m.group() + self.sections[channel][0].dist.replace('/','_') + '_Release'
                 get_remote_file(remote_file, local_file, True)
         for dummy, section in self.iter_sections():
             section.update()
