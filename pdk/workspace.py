@@ -32,6 +32,7 @@ from urlparse import urlsplit
 from itertools import chain
 from pdk.version_control import VersionControl, CommitNotFound
 from pdk.cache import Cache
+from pdk.cache import calculate_checksums
 from pdk.channels import OutsideWorldFactory, WorldData, \
      MassAcquirer
 from pdk.exceptions import ConfigurationError, SemanticError, \
@@ -682,6 +683,30 @@ Prints all component metadata to standard out.
                 print '|'.join([ent_id, ent_type, name, tag, str(value)])
 
 dumpmeta = make_invokable(dumpmeta)
+
+def purge(args):
+    """\\fB%prog\\fP \\fICOMPONENTS\\fP
+.PP
+Purge cache files of the given component
+    """
+    workspace = current_workspace()
+    get_desc = workspace.get_component_descriptor
+    cache = workspace.cache
+    component_refs = args.get_reoriented_files(workspace)
+    for component_ref in component_refs:
+        descriptor = get_desc(component_ref)
+        for ref in  descriptor.iter_package_refs():
+            for child in ref.children:
+                blob_id = child.reference.blob_id
+                header = workspace.cache.get_header_filename(blob_id)
+                if not os.access(header, os.F_OK):
+                    continue
+                md5 = header.replace('.header', '')
+                sha1 = workspace.cache.file_path(calculate_checksums(md5)[0])
+                for file in [header, md5, sha1]:
+                    os.remove(file)
+            
+purge = make_invokable(purge)
 
 def dumplinks(args):
     """\\fB%prog\\fP \\fICOMPONENT\\fP
