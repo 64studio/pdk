@@ -1,3 +1,9 @@
+pdk (0.9.4) UNRELEASED; urgency=low
+
+  * Applied patches
+
+ -- Free Ekanayaka <freee@debian.org>  Fri, 11 May 2007 01:22:43 +0200
+
 pdk (0.9.3) UNRELEASED; urgency=low
 
   * Use newer Debian policy for building.
