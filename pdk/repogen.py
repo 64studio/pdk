@@ -50,7 +50,7 @@ deb_binary_field_order = [
     "Architecture", 'arch', "Source", "Version", 'version', "Replaces",
     "Provides", "Depends", "Pre-Depends", "Recommends",
     "Suggests", "Conflicts", "Conffiles", "Filename",
-    "Size", "MD5Sum", "SHA1Sum", "Description" ]
+    "Size", "MD5Sum", "SHA1Sum", "Description", "Task" ]
 
 deb_source_field_order = [
     "Package", "Source", 'name', "Binary", "Version", 'version',
@@ -264,6 +264,7 @@ class DebianPoolInjector(object):
             apt_fields["Size"] = str(size)
             apt_fields["Filename"] = pool_path
             apt_fields["MD5Sum"] = md5_digest
+            apt_fields["Task"] = "cdd"
         else:
             field_cmp = deb_source_field_cmp
             pool_path = pool_path_dir
