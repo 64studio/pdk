@@ -264,7 +264,9 @@ class DebianPoolInjector(object):
             apt_fields["Size"] = str(size)
             apt_fields["Filename"] = pool_path
             apt_fields["MD5Sum"] = md5_digest
-            apt_fields["Task"] = "cdd"
+            if  hasattr(self.package.pdk, 'task'):
+                apt_fields["Task"] = self.package.pdk.task
+
         else:
             field_cmp = deb_source_field_cmp
             pool_path = pool_path_dir
@@ -642,7 +644,7 @@ class Compiler:
 
         # some sane defaults for contents
         default_date = strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
-        default_apt_suite_name = get_apt_component_name(product.ref)
+        default_apt_suite_name = product.id
         contents = { ('apt-deb', 'suite'): default_apt_suite_name,
                      ('apt-deb', 'version'): '0',
                      ('apt-deb', 'origin'):default_apt_suite_name,

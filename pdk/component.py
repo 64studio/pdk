@@ -562,6 +562,11 @@ class ComponentDescriptor(object):
             condition = PhantomConditionWrapper(xml_condition,
                                                 package_type,
                                                 blob_id)
+        from pdk.workspace import inherit
+        if inherit:
+            for key, val in [((k[0],k[1]),k[2]) for k in self.meta]:
+                if key == ('pdk','task'):
+                    predicates.append((key[0],key[1],val))
 
         ref = PackageStanza(package_type, blob_id, condition, predicates)
         ref.children = inner_refs
@@ -651,6 +656,17 @@ class ComponentDescriptor(object):
 
     def build_component_descriptor(self, component_element):
         '''Build up the state of this descriptor from the given element.'''
+        self.id = self.read_field(component_element, 'id')
+        self.description = self.read_field(component_element,
+                                           'description',
+                                           False)
+        meta_element = component_element.find('meta')
+        if meta_element:
+            meta, links, unlinks = self.build_meta(meta_element)
+            self.meta.extend(meta)
+            self.links.extend(links)
+            self.unlinks.extend(unlinks)
+
         contents_element = component_element.find('contents')
         if contents_element:
             for element in contents_element:
@@ -667,18 +683,7 @@ class ComponentDescriptor(object):
                 entity = self.build_entity(element)
                 self.entities[(entity.ent_type, entity.ent_id)] = entity
 
-        meta_element = component_element.find('meta')
-        if meta_element:
-            meta, links, unlinks = self.build_meta(meta_element)
-            self.meta.extend(meta)
-            self.links.extend(links)
-            self.unlinks.extend(unlinks)
-
-        self.id = self.read_field(component_element, 'id')
         self.name = self.read_field(component_element, 'name')
-        self.description = self.read_field(component_element,
-                                           'description',
-                                           False)
         self.requires = self.read_multifield(component_element, 'requires')
         self.provides = self.read_multifield(component_element, 'provides')
 

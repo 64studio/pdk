@@ -66,6 +66,9 @@ from pdk.yaxml import parse_yaxml_file
 # current schema level for this pdk build
 schema_target = 6
 
+# dirty hack to support tasks
+inherit = False
+
 class NotAWorkspaceError(ConfigurationError):
     '''A workspace op was requested on or in a non workspace directory.'''
     pass
@@ -308,6 +311,8 @@ def repogen(args):
 Generate a file-system repository
 for a linux product.
     """
+    global inherit
+    inherit = True
     ws = current_workspace()
     product_file = args.get_one_reoriented_file(ws)
     get_desc = ws.get_component_descriptor
