@@ -251,6 +251,7 @@ def _install_i386(cd_path):
             extra_append += 'debconf/priority=%s ' % inst_conf["debconf_priority"]
         if inst_conf.has_key("suite"):
             extra_append += 'mirror/suite=%s ' % inst_conf["suite"]
+            extra_append += 'cdrom/codename=%s ' % inst_conf["suite"]
         if inst_conf.has_key("locale"):
             extra_append += 'debian-installer/locale=%s ' % inst_conf["locale"]
         if inst_conf.has_key("keymap"):
