@@ -1071,7 +1071,7 @@ def abstract(args):
         if package == '':
             continue
         name='<name>%s</name>' % (package)
-        contents = contents + '<deb>%s</deb>' % (name)
+        contents = contents + '<%s>%s</%s>' % (type,name,type)
 
     header='<?xml version="1.0" encoding="utf-8"?>'
     component='<id>abstract</id>'
