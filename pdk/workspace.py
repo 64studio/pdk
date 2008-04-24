@@ -1021,6 +1021,11 @@ def abstract(args):
     get_desc = workspace.get_component_descriptor
     component_names = args.get_reoriented_files(workspace)
 
+    if args.opts.arch:
+        arch = args.opts.arch
+    else:
+        arch = getoutput('/usr/bin/dpkg --print-architecture')
+
     if args.opts.select:
         import re
         import apt_pkg
@@ -1034,6 +1039,13 @@ def abstract(args):
 
         packages = []
         for section_name, section in workspace.world.iter_sections():
+
+            # Select only our architecture
+            try:
+                section.full_path.index('binary-%s' % arch)
+            except ValueError:
+                        continue
+
             section_iterator = section.iter_package_info()
             for ghost, header, blob_id, locator in section_iterator:
                 sections = apt_pkg.ParseSection(header)
@@ -1065,7 +1077,7 @@ def abstract(args):
     component = ComponentDescriptor(component_names[0],StringIO(header + body))
     component.write()
     
-abstract = make_invokable(abstract, 'meta', 'select')
+abstract = make_invokable(abstract, 'meta', 'select', 'arch')
 
 def complete(args):
     """usage: pdk complete COMPONENTS
