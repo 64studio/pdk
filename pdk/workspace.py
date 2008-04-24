@@ -1031,6 +1031,11 @@ def abstract(args):
     else:
         type = 'deb'
 
+    if args.opts.exclude:
+        exclude = args.opts.exclude.split(',')
+    else:
+        type = 'deb'
+
     if args.opts.select:
         import re
         import apt_pkg
@@ -1056,6 +1061,12 @@ def abstract(args):
                 sections = apt_pkg.ParseSection(header)
                 if ghost.type != type:
                     continue
+                try:
+                    exclude.index(ghost.name)
+                    continue
+                except ValueError:
+                    pass
+
                 if sections.Find(tag):
                     if key == "*": # Wildcard
                         packages.append(ghost.name)
@@ -1087,7 +1098,7 @@ def abstract(args):
     component = ComponentDescriptor(component_names[0],StringIO(header + body))
     component.write()
     
-abstract = make_invokable(abstract, 'meta', 'select', 'arch', 'type')
+abstract = make_invokable(abstract, 'meta', 'select', 'arch', 'type','exclude')
 
 def complete(args):
     """usage: pdk complete COMPONENTS
