@@ -1034,7 +1034,7 @@ def abstract(args):
     if args.opts.exclude:
         exclude = args.opts.exclude.split(',')
     else:
-        type = 'deb'
+        exclude = []
 
     if args.opts.select:
         import re
