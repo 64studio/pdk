@@ -1057,6 +1057,9 @@ def abstract(args):
                 if ghost.type != type:
                     continue
                 if sections.Find(tag):
+                    if key == "*": # Wildcard
+                        packages.append(ghost.name)
+                        continue
                     try:
                         sections.Find(tag).replace(' ','').split(',').index(key)
                         packages.append(ghost.name)
