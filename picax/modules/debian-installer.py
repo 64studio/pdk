@@ -42,6 +42,8 @@ options = { "inst-base-url": { "config-key": "base-url",
                                  "parameter": True },
             "inst-locale": { "config-key": "locale",
                                  "parameter": True },
+            "inst-boot-options": { "config-key": "boot-options",
+                                 "parameter": True },
             "inst-keymap": { "config-key": "keymap",
                                  "parameter": True },
             "inst-floppy-path": { "config-key": "floppy_path",
@@ -198,8 +200,10 @@ def _install_common(cd_path):
                       ("base_exclude_list", "base_exclude"),
                       ("udeb_include_list", "udeb_include"),
                       ("udeb_include_list", "udeb_include")):
-        if inst_conf.has_key(key) and os.path.exists(inst_conf[key]):
-            shutil.copyfile(inst_conf[key], "%s/.disk/%s" % (cd_path, fn))
+        if inst_conf.has_key(key):
+		diskfile = open("%s/.disk/%s" % (cd_path, fn), "w")
+		diskfile.write('\n'.join(inst_conf[key].split(' ')) + "\n")
+		diskfile.close()
 
     if inst_conf.has_key("preseed_file"):
         _download_preseed(inst_conf["preseed_file"], cd_path)    
@@ -254,6 +258,8 @@ def _install_i386(cd_path):
             extra_append += 'cdrom/codename=%s ' % inst_conf["suite"]
         if inst_conf.has_key("locale"):
             extra_append += 'debian-installer/locale=%s ' % inst_conf["locale"]
+        if inst_conf.has_key("boot-options"):
+            extra_append += inst_conf["boot-options"]
         if inst_conf.has_key("keymap"):
             extra_append += 'console-keymaps-at/keymap=%s ' % inst_conf["keymap"]
 
