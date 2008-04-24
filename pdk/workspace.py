@@ -1021,8 +1021,33 @@ def abstract(args):
     get_desc = workspace.get_component_descriptor
     component_names = args.get_reoriented_files(workspace)
 
+    if args.opts.select:
+        import re
+        import apt_pkg
+        p = re.compile('([^:]+): (.*)')
+        m = p.match(args.opts.select)
+        if m:
+            tag = m.groups()[0]
+            key = m.groups()[1]
+        else:
+            print "error"
+
+        packages = []
+        for section_name, section in workspace.world.iter_sections():
+            section_iterator = section.iter_package_info()
+            for ghost, header, blob_id, locator in section_iterator:
+                sections = apt_pkg.ParseSection(header)
+                if sections.Find(tag):
+                    try:
+                        sections.Find(tag).replace(' ','').split(',').index(key)
+                        packages.append(ghost.name)
+                    except ValueError:
+                        continue
+
+    else:
+        packages=sys.stdin.read().split("\n")
+
     contents=''
-    packages=sys.stdin.read().split("\n")
     for package in packages:
         if package == '':
             continue
@@ -1031,8 +1056,8 @@ def abstract(args):
 
     header='<?xml version="1.0" encoding="utf-8"?>'
     component='<id>abstract</id>'
-    if args.opts.label:
-        component = component + '<meta><task>%s</task></meta>' % args.opts.label
+    if args.opts.meta:
+        component = component + '<meta>%s</meta>' % args.opts.meta
     component = component + '<contents>%s</contents>' % (contents)
 
     body='<component>%s</component>' % (component)
@@ -1040,7 +1065,7 @@ def abstract(args):
     component = ComponentDescriptor(component_names[0],StringIO(header + body))
     component.write()
     
-abstract = make_invokable(abstract, 'label')
+abstract = make_invokable(abstract, 'meta', 'select')
 
 def complete(args):
     """usage: pdk complete COMPONENTS

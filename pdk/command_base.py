@@ -150,6 +150,18 @@ class CommandSpec(object):
                    type = "string",
                    help = "Media label")
 
+            elif item == 'select':
+                op("-s", "--select",
+                   dest = "select",
+                   type = "string",
+                   help = "Select statement")
+
+            elif item == 'meta':
+                op("-m", "--meta",
+                   dest = "meta",
+                   type = "string",
+                   help = "Meta data")
+
             elif item == 'machine-readable':
                 op("-m", "--machine-readable",
                    action = "store_true",
