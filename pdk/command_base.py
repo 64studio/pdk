@@ -162,6 +162,12 @@ class CommandSpec(object):
                    type = "string",
                    help = "Meta data")
 
+            elif item == 'type':
+                op("-t", "--type",
+                   dest = "type",
+                   type = "string",
+                   help = "Package type")
+
             elif item == 'machine-readable':
                 op("-m", "--machine-readable",
                    action = "store_true",

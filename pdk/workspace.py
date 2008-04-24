@@ -1026,6 +1026,11 @@ def abstract(args):
     else:
         arch = getoutput('/usr/bin/dpkg --print-architecture')
 
+    if args.opts.type:
+        type = args.opts.type
+    else:
+        type = 'deb'
+
     if args.opts.select:
         import re
         import apt_pkg
@@ -1049,6 +1054,8 @@ def abstract(args):
             section_iterator = section.iter_package_info()
             for ghost, header, blob_id, locator in section_iterator:
                 sections = apt_pkg.ParseSection(header)
+                if ghost.type != type:
+                    continue
                 if sections.Find(tag):
                     try:
                         sections.Find(tag).replace(' ','').split(',').index(key)
@@ -1077,7 +1084,7 @@ def abstract(args):
     component = ComponentDescriptor(component_names[0],StringIO(header + body))
     component.write()
     
-abstract = make_invokable(abstract, 'meta', 'select', 'arch')
+abstract = make_invokable(abstract, 'meta', 'select', 'arch', 'type')
 
 def complete(args):
     """usage: pdk complete COMPONENTS
