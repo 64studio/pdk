@@ -1030,13 +1030,17 @@ def abstract(args):
         contents = contents + '<deb>%s</deb>' % (name)
 
     header='<?xml version="1.0" encoding="utf-8"?>'
-    component='<id>abstract</id><contents>%s</contents>' % (contents)
+    component='<id>abstract</id>'
+    if args.opts.label:
+        component = component + '<meta><task>%s</task></meta>' % args.opts.label
+    component = component + '<contents>%s</contents>' % (contents)
+
     body='<component>%s</component>' % (component)
 
     component = ComponentDescriptor(component_names[0],StringIO(header + body))
     component.write()
     
-abstract = make_invokable(abstract)
+abstract = make_invokable(abstract, 'label')
 
 def complete(args):
     """usage: pdk complete COMPONENTS
