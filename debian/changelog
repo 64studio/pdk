@@ -2,6 +2,7 @@ pdk (0.9.4) UNRELEASED; urgency=low
 
   * Applied patches
   * Ported to python 2.5
+  * Depends on rpm
 
  -- Free Ekanayaka <freee@debian.org>  Fri, 11 May 2007 01:22:43 +0200
 
