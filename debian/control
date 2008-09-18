@@ -1,8 +1,7 @@
-# $Progeny$
 Source: pdk
 Section: devel
 Priority: optional
-Maintainer: Darrin Thompson <darrint@progeny.com>
+Maintainer: Free Ekanayaka <freee@debian.org>
 Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5.0.37.2), python-all-dev, python-central (>= 0.5), funnelweb, python-pycurl
 Standards-Version: 3.7.2
 XS-Python-Version: current
