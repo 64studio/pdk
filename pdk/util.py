@@ -29,12 +29,16 @@ __revision__ = "$Progeny$"
 import os
 import re
 import sys
+
+# Use the old xml package, see /usr/share/doc/python-xml
+sys.path.append('/usr/lib/python%s/site-packages/oldxml' % sys.version[:3])
+
 import inspect
 import stat
 import pycurl
 from cStringIO import StringIO
-from cElementTree import ElementTree
-from elementtree.ElementTree import XMLTreeBuilder
+from xml.etree.cElementTree import ElementTree
+from xml.etree.ElementTree import XMLTreeBuilder
 from xml.sax.writer import XmlWriter
 from pdk.progress import ConsoleProgress, CurlAdapter
 from pdk.exceptions import ConfigurationError, SemanticError, InputError
@@ -105,8 +109,8 @@ def cached_property(prop_name, create_fn):
                     doc = create_fn.__doc__)
 
 # These _must_ come from "real" python elementtree
-from elementtree.ElementTree import Comment as et_comment
-from elementtree.ElementTree import ProcessingInstruction \
+from xml.etree.ElementTree import Comment as et_comment
+from xml.etree.ElementTree import ProcessingInstruction \
      as et_processing_instruction
 
 def cpath(*args):
