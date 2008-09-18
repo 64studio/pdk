@@ -39,7 +39,7 @@ from pdk.exceptions import ConfigurationError, SemanticError, \
      CommandLineError, InputError
 from pdk.util import pjoin, make_self_framer, cached_property, \
      relative_path, get_remote_file_as_string, make_ssh_framer, \
-     make_fs_framer, get_remote_file, noop, string_domain
+     make_fs_framer, get_remote_file, noop, string_domain, shell_command
 from pdk.semdiff import print_bar_separated, print_man, \
      iter_diffs, iter_diffs_meta, filter_predicate, filter_data
 from pdk.component import ComponentDescriptor
@@ -282,6 +282,7 @@ def create_workspace(workspace_root):
     vc.create()
     os.symlink(pjoin('etc', 'git'), pjoin(ws.location, '.git'))
     open(pjoin(ws.config_dir, 'schema'), 'w').write('%d\n' % schema_target)
+    shell_command('cd %s && git-init' % workspace_root)
     return ws
 
 def create(args):

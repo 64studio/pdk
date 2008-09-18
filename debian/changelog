@@ -4,6 +4,7 @@ pdk (0.9.4) UNRELEASED; urgency=low
   * Ported to python 2.5
   * Depends on rpm
   * Set myself as maintainer
+  * Run git-init when creating a new workspace
 
  -- Free Ekanayaka <freee@debian.org>  Fri, 11 May 2007 01:22:43 +0200
 
