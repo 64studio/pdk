@@ -811,6 +811,7 @@ class VersionControl(object):
 
         self.alt_git.run_update_index(implicit_add_files, add_flag = True)
         self.alt_git.run_commit(commit_message_file, commit_message)
+        shell_command('git-update-index --add --remove --refresh %s' % " ".join([ f for f in all_files ]))
 
         add_remove.clear(files)
 
