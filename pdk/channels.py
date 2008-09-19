@@ -623,7 +623,7 @@ class OutsideWorldFactory(object):
                 yield DirectorySection(path)
             elif type_value == 'source':
                 yield RemoteWorkspaceSection(path,
-                                             self.get_channel_file(channel_name,full_path))
+                                             self.get_channel_file(channel_name,path))
             elif type_value == 'rpm-md':
                 yield RpmMdSection(channel_name, path,
                                    self.get_channel_file)
