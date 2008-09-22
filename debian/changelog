@@ -1,4 +1,4 @@
-pdk (0.9.3.1) 64studio; urgency=low
+pdk (0.9.3.2) 64studio; urgency=low
 
   * Applied patches
   * Ported to python 2.5
@@ -6,6 +6,7 @@ pdk (0.9.3.1) 64studio; urgency=low
   * Set myself as maintainer
   * Run git-init when creating a new workspace
   * Added missing build-dependences
+  * Depend on smartpm-core instead of smartpm
 
  -- Free Ekanayaka <freee@debian.org>  Fri, 11 May 2007 01:22:43 +0200
 
