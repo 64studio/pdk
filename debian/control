@@ -2,7 +2,7 @@ Source: pdk
 Section: devel
 Priority: optional
 Maintainer: Free Ekanayaka <freee@debian.org>
-Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5.0.37.2), python-all-dev, python-central (>= 0.5), funnelweb, python-pycurl
+Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5.0.37.2), python-all-dev, python-central (>= 0.5), funnelweb, python-pycurl, python-egenix-mxtexttools, python-xml, smartpm
 Standards-Version: 3.7.2
 XS-Python-Version: current
 
@@ -33,5 +33,3 @@ Description: Componentized Linux Platform Development Kit (PDK)
  patches and managing the changes over time.
  .
  Homepage: http://componentizedlinux.org/
-XB-Python-Version: ${python:Versions}
-# vim:set ai et sw=1 ts=1 tw=78:
