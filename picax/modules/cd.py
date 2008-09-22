@@ -28,7 +28,7 @@ import picax.config
 # controlled by module parameters at some point.
 
 cd_size_multiplier = 1048576
-mkisofs_std_args = "-R -J -T -joliet-long -quiet"
+genisoimage_std_args = "-R -J -T -joliet-long -quiet"
 
 options = { "media-image-size": {"config-key": "image_size",
                                  "parameter": True,
@@ -101,8 +101,8 @@ def create_image(index, boot_image_path):
         label_options = "-V '%s %s'" % (conf["media_options"]["label"],
                                         cd_index)
 
-    if os.system("mkisofs -o %s/img-bin%d.iso %s %s %s %s" \
-                 % (conf["dest_path"], index, mkisofs_std_args,
+    if os.system("genisoimage -o %s/img-bin%d.iso %s %s %s %s" \
+                 % (conf["dest_path"], index, genisoimage_std_args,
                     label_options, boot_args, data_path)):
         raise RuntimeError, "CD image generation failed"
 
