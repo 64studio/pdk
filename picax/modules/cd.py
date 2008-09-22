@@ -83,11 +83,11 @@ def create_image(index, boot_image_path):
 
     # Write the apt label, if there is one.
 
-    if conf.has_key("cd_label"):
+    if conf["media_options"]["label"]:
         if not os.path.isdir(data_path + "/.disk"):
             os.mkdir("%s/.disk" % (data_path,))
         info_file = open("%s/.disk/info" % (data_path,), "w")
-        info_file.write("%s (%d)\n" % (conf["cd_label"], index))
+        info_file.write("%s (%d)\n" % (conf["media_options"]["label"], index))
         info_file.close()
 
     # Handle CD label.

@@ -8,6 +8,7 @@ pdk (0.9.3.4) UNRELEASED; urgency=low
   * Added missing build-dependences
   * Depend on smartpm-core instead of smartpm
   * Renamed mkisofs in genisoimage
+  * Use media-label instead of cd-label to write the .disk/info file
 
  -- Free Ekanayaka <freee@debian.org>  Fri, 11 May 2007 01:22:43 +0200
 
