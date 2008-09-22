@@ -9,10 +9,11 @@ pdk (0.9.3.4) UNRELEASED; urgency=low
   * Depend on smartpm-core instead of smartpm
   * Renamed mkisofs in genisoimage
   * Use media-label instead of cd-label to write the .disk/info file
+  * Cleanup previous changelog entries
 
- -- Free Ekanayaka <freee@debian.org>  Fri, 11 May 2007 01:22:43 +0200
+ -- Free Ekanayaka <freee@debian.org>  Mon, 22 Sep 2008 21:51:52 +0200
 
-pdk (0.9.3) UNRELEASED; urgency=low
+pdk (0.9.3) unstable; urgency=low
 
   * Use newer Debian policy for building.
   * Use versioned dep for git-core.
@@ -21,7 +22,7 @@ pdk (0.9.3) UNRELEASED; urgency=low
 
  -- Darrin Thompson <darrint@progeny.com>  Thu,  5 Oct 2006 16:44:02 -0400
 
-pdk (0.9.2) UNRELEASED; urgency=low
+pdk (0.9.2) unstable; urgency=low
 
   * Fix Debian control file to assign package to "devel" section, not "dev".
 
