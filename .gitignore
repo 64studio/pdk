@@ -1,0 +1,12 @@
+pdk/*.pyc
+doc/*.html
+doc/*.lis
+atest/*.fw.sh
+debian/*.debhelper
+atest.tar
+build
+debian/files
+debian/pdk.substvars
+debian/pdk
+pdk.1
+python-build-stamp-2.5
