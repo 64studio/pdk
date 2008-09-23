@@ -174,6 +174,12 @@ class CommandSpec(object):
                    type = "string",
                    help = "Exclude packages")
 
+            elif item == 'packages':
+                op("-p", "--packages",
+                   dest = "packages",
+                   type = "string",
+                   help = "Packages statement")
+
             elif item == 'machine-readable':
                 op("-m", "--machine-readable",
                    action = "store_true",

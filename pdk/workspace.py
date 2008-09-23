@@ -1038,6 +1038,7 @@ def abstract(args):
         for p in args.opts.exclude.split(','):
 	   exclude.append(p.strip(' \t'))
 
+    packages = []
     if args.opts.select:
         import re
         import apt_pkg
@@ -1049,7 +1050,6 @@ def abstract(args):
         else:
             print "error"
 
-        packages = []
         for section_name, section in workspace.world.iter_sections():
 
             # Select only our architecture
@@ -1094,8 +1094,10 @@ def abstract(args):
                             packages.append(ghost.name)
                     except ValueError:
                         continue
-
-    else:
+    if args.opts.packages:
+        for p in args.opts.packages.split(','):
+	   packages.append(p.strip(' \t'))
+    if not packages:
         packages=sys.stdin.read().split("\n")
 
     contents=''
@@ -1117,7 +1119,7 @@ def abstract(args):
     component = ComponentDescriptor(component_names[0],StringIO(header + body))
     component.write()
     
-abstract = make_invokable(abstract, 'meta', 'select', 'arch', 'type','exclude')
+abstract = make_invokable(abstract, 'meta', 'select', 'arch', 'type', 'exclude', 'packages')
 
 def complete(args):
     """usage: pdk complete COMPONENTS
