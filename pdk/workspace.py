@@ -1021,6 +1021,7 @@ def abstract(args):
     workspace = current_workspace()
     get_desc = workspace.get_component_descriptor
     component_names = args.get_reoriented_files(workspace)
+    os.chdir(workspace.location)
 
     if args.opts.arch:
         arch = args.opts.arch
