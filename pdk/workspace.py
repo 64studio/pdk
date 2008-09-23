@@ -1033,10 +1033,10 @@ def abstract(args):
     else:
         type = 'deb'
 
+    exclude = []
     if args.opts.exclude:
-        exclude = args.opts.exclude.split(',')
-    else:
-        exclude = []
+        for p in args.opts.exclude.split(','):
+	   exclude.append(p.strip(' \t'))
 
     if args.opts.select:
         import re
