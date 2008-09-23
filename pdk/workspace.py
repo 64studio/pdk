@@ -1063,19 +1063,35 @@ def abstract(args):
                 sections = apt_pkg.ParseSection(header)
                 if ghost.type != type:
                     continue
+
+                # Try direct match
                 try:
                     exclude.index(ghost.name)
                     continue
                 except ValueError:
                     pass
 
+                # Try wildcard match
+                skip=False
+                for pattern in exclude:
+                    if pattern.find('*') == -1:
+                        continue
+                    p = re.compile((pattern.replace('.','\.')).replace('*','.*'))
+                    if p.match(ghost.name):
+                        skip=True
+                        break
+                if skip:
+                    continue
+
                 if sections.Find(tag):
                     if key == "*": # Wildcard
-                        packages.append(ghost.name)
+                        if ghost.name not in packages:
+                            packages.append(ghost.name)
                         continue
                     try:
                         sections.Find(tag).replace(' ','').split(',').index(key)
-                        packages.append(ghost.name)
+                        if ghost.name not in packages:
+                            packages.append(ghost.name)
                     except ValueError:
                         continue
 
@@ -1083,6 +1099,7 @@ def abstract(args):
         packages=sys.stdin.read().split("\n")
 
     contents=''
+    packages.sort()
     for package in packages:
         if package == '':
             continue
