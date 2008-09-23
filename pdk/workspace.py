@@ -854,7 +854,7 @@ def find_upgrade(cache, stanza, iter_world_items):
             return candidate
     return None
 
-def run_closure(component_names, arch):
+def run_closure(component_names, arch, outfile):
 
     control = init(datadir = 'etc')
     
@@ -984,12 +984,22 @@ def run_closure(component_names, arch):
         print "Unable to calculate closure"
         pp(errors)
     elif missing > 0:
-        header='<?xml version="1.0" encoding="utf-8"?>'
-        component='<id>closure</id><contents>%s</contents>' % (contents)
-        body='<component>%s</component>' % (component)
-        closure = ComponentDescriptor("closure.xml",StringIO(header + body))
+	# If the output file exists add dependences to it
+	if os.access(outfile, os.F_OK):
+	   f = open(outfile, 'r')
+           body = f.read()
+           index = body.find('</contents>')
+           body = body[:index] + contents + body[index:]
+           closure = ComponentDescriptor(outfile)
+        # Otherwise create a new file
+	else:
+           header='<?xml version="1.0" encoding="utf-8"?>'
+           component='<id>closure</id><contents>%s</contents>' % (contents)
+           body=header + '<component>%s</component>' % (component)
+
+        closure = ComponentDescriptor(outfile,StringIO(body))
         closure.write()
-        print "Wrote %d missing packages into closure.xml" % missing
+        print "Wrote %d missing packages into %s" % (missing,outfile)
     else:
         print "The components are dependency closed"
         
@@ -1001,16 +1011,20 @@ def closure(args):
     workspace = current_workspace()
     get_desc = workspace.get_component_descriptor
     component_names = args.get_reoriented_files(workspace)
-    os.chdir(workspace.location)
     if args.opts.arch:
         arch = args.opts.arch
     else:
         arch = getoutput('/usr/bin/dpkg --print-architecture')
-    run_closure(component_names, arch)
+    if args.opts.output_dest:
+	outfile=workspace.reorient_filename(args.opts.output_dest)
+    else:
+	outfile='closure.xml'
+    os.chdir(workspace.location)
+    run_closure(component_names, arch, outfile)
     
 
 closure = make_invokable(closure, 'arch', 'machine-readable', 'no-report',
-                         'dry-run', 'channels', 'show-unchanged')
+                         'dry-run', 'channels', 'show-unchanged', 'output-dest')
 
 def abstract(args):
     """usage: pdk abstract COMPONENT
