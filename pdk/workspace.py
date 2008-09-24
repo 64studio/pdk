@@ -965,10 +965,13 @@ def run_closure(component_names, arch, outfile):
                 if loader.getChannel().getType() == 'pdk-deb':
                     need=0
             if need == 1:
+                # HACK: smartpm insists in wanting this
+                if package.name == 'debconf-english':
+                    continue
+
                 # scary assumption
                 loader = package.loaders.keys()[0]
                 missing += 1
-
                 info = loader.getInfo(package)
 
                 # less scary assumption
