@@ -857,18 +857,24 @@ def find_upgrade(cache, stanza, iter_world_items):
 
 def run_closure(component_names, arch, outfile):
 
+    # Init smartpm
     control = init(datadir = 'etc')
-    
+    sysconf.set('deb-arch', arch)
+
+    # Create "virtual" smartpm channels containing the packages
+    # of the given component names
     for component_name in component_names:
         sysconf.set(('channels', component_name),
                       { 'path': component_name,
                        'disabled': False,
                        'manual': False,
                        'name': component_name,
-                       'priority': 1000,
+                       'priority': 100,
                        'removable': False,
                        'type': 'pdk-deb'})
 
+    # Create regular smartpm channels using the sources defined
+    # in etc/channels.xml
     ws = current_workspace()
     channels = parse_yaxml_file(ws.channel_data_source)
     
@@ -894,10 +900,9 @@ def run_closure(component_names, arch, outfile):
                       'removable': False,
                       'type': 'apt-deb'})
 
-    sysconf.set('deb-arch', arch)
-
+    # Load the packages to "install", that means packages contained in the
+    # given component names
     control.reloadChannels(caching = ALWAYS)
-
     cache = control.getCache()
     packages = []
 
