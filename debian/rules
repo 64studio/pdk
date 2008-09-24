@@ -28,6 +28,7 @@ include /usr/share/cdbs/1/class/python-distutils.mk
 
 clean::
 	rm -f atest.tar
+	rm -f atest.tar.cdbs-config_list
 
 install/pdk::
 	python makeman.py >pdk.1
