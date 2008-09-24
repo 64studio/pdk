@@ -869,7 +869,7 @@ def run_closure(component_names, arch, outfile):
                        'disabled': False,
                        'manual': False,
                        'name': component_name,
-                       'priority': 100,
+                       'priority': 1000,
                        'removable': False,
                        'type': 'pdk-deb'})
 
