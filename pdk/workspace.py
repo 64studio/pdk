@@ -486,6 +486,7 @@ $EDITOR will be invoked to obtain a commit message.
     """
     ws = current_workspace()
     files = args.get_reoriented_files(ws, 0)
+    os.chdir(ws.location)
     ws.commit(args.opts.commit_msg_file, args.opts.commit_msg, files)
 
 commit = make_invokable(commit, 'commit-msg')
