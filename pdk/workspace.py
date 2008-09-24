@@ -1123,7 +1123,11 @@ def abstract(args):
         contents = contents + '<%s>%s</%s>' % (type,name,type)
 
     header='<?xml version="1.0" encoding="utf-8"?>'
-    component='<id>abstract</id>'
+    if args.opts.label:
+        id = args.opts.label
+    else:
+        id = 'abstract'
+    component='<id>%s</id>' % id
     if args.opts.meta:
         component = component + '<meta>%s</meta>' % args.opts.meta
     component = component + '<contents>%s</contents>' % (contents)
@@ -1133,7 +1137,7 @@ def abstract(args):
     component = ComponentDescriptor(component_names[0],StringIO(header + body))
     component.write()
     
-abstract = make_invokable(abstract, 'meta', 'select', 'arch', 'type', 'exclude', 'packages')
+abstract = make_invokable(abstract, 'meta', 'select', 'arch', 'type', 'exclude', 'packages', 'label')
 
 def complete(args):
     """usage: pdk complete COMPONENTS
