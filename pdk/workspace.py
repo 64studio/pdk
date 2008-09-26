@@ -1116,10 +1116,21 @@ def abstract(args):
     if args.opts.packages:
         for p in args.opts.packages.split(','):
 	   packages.append(p.strip(' \t'))
-    if not packages:
+
+    components = []
+    if args.opts.components:
+        for p in args.opts.components.split(','):
+	   components.append(p.strip(' \t'))
+
+    if not packages and not components:
         packages=sys.stdin.read().split("\n")
 
     contents=''
+
+    for component in components:
+        entry = '<component>%s</component>' % (component)
+        contents = contents + entry
+
     packages.sort()
     for package in packages:
         if package == '':
@@ -1142,7 +1153,7 @@ def abstract(args):
     component = ComponentDescriptor(component_names[0],StringIO(header + body))
     component.write()
     
-abstract = make_invokable(abstract, 'meta', 'select', 'arch', 'type', 'exclude', 'packages', 'label')
+abstract = make_invokable(abstract, 'label', 'meta', 'arch', 'type', 'select', 'exclude', 'packages', 'components')
 
 def complete(args):
     """usage: pdk complete COMPONENTS

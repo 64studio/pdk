@@ -174,11 +174,17 @@ class CommandSpec(object):
                    type = "string",
                    help = "Exclude packages")
 
+            elif item == 'components':
+                op("-C", "--components",
+                   dest = "components",
+                   type = "string",
+                   help = "A list of component names")
+
             elif item == 'packages':
-                op("-p", "--packages",
+                op("-P", "--packages",
                    dest = "packages",
                    type = "string",
-                   help = "Packages statement")
+                   help = "A list of package names")
 
             elif item == 'machine-readable':
                 op("-m", "--machine-readable",
