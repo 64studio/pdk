@@ -1,8 +1,11 @@
+*.pyc
 pdk/*.pyc
+picax/*.pyc
 doc/*.html
 doc/*.lis
 atest/*.fw.sh
 debian/*.debhelper
+debian/pdk.debhelper.log
 atest.tar
 build
 debian/files
