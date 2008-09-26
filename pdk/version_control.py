@@ -946,5 +946,6 @@ class VersionControl(object):
                       'workspace.'
             self.alt_git.merge('HEAD', branch_name, silent)
             add_remove.clear([])
+        shell_command('git-reset --hard HEAD')
 
 # vim:set ai et sw=4 ts=4 tw=75:
