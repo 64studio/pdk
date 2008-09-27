@@ -1,4 +1,4 @@
-pdk (0.9.3.4) UNRELEASED; urgency=low
+pdk (0.9.4) 64studio; urgency=low
 
   * Applied patches
   * Ported to python 2.5
@@ -10,8 +10,31 @@ pdk (0.9.3.4) UNRELEASED; urgency=low
   * Renamed mkisofs in genisoimage
   * Use media-label instead of cd-label to write the .disk/info file
   * Cleanup previous changelog entries
+  * Added support for bash-like wildcard '*' in the --exclude option of
+    the abstract command
+  * Strip blanks from exclude patterns
+  * New --packages option for the abstract command
+  * Let the closure command write to an existing component through the -
+    -out-file option
+  * Added --label option to the abstract command, for setting the id of
+    the generated component
+  * Change working directory to the current workspace before running
+    commit commands
+  * Some more comments in run_closure
+  * Removed smartpm hack, bug reported upstream, using smartpm << 0.51
+    from now on
+  * Depend on smartpm << 0.51 as higher versions break the closure
+    command
+  * Reverted pdk-deb channel priority to 1000, as setting it to 100
+    breaks smart's resolver
+  * Remove atest.tar.cdbs-config_list when cleaning
+  * Run git-reset after the pull command
+  * Add --components option to the abstract command
+  * Add *.pyc and debian build files to .gitignore
+  * Disable audit, push, update, dumplinks and migrate commands. They
+    are not stable yet
 
- -- Free Ekanayaka <freee@debian.org>  Mon, 22 Sep 2008 21:51:52 +0200
+ -- Free Ekanayaka <freee@debian.org>  Sat, 27 Sep 2008 09:41:49 +0200
 
 pdk (0.9.3) unstable; urgency=low
 
