@@ -107,6 +107,13 @@ Dir "%s/"
     cache = apt_pkg.GetCache()
     global_conf["apt_path"] = base_dir
 
+def clean():
+    "Clean apt temp files."
+    global_conf = picax.config.get_config()
+    base_dir = global_conf["temp_dir"] + "/apt-info"
+    if os.path.exists(base_dir):
+        shutil.rmtree(base_dir)
+
 def _find_package_in_cache(pkg_name):
     global cache
 

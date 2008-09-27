@@ -371,6 +371,7 @@ Generate media for a linux product.
         newrepo = picax.newrepo.NewRepository(current_group, top_path)
         newrepo.write_repo()
 
+    picax.apt.clean()
     picax.installer.post_install()
     picax.media.create_media()
 
