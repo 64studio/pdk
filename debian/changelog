@@ -1,3 +1,10 @@
+pdk (0.9.5) 64studio; urgency=low
+
+  * Add .gpg.conf and set debian-tag to %(versio)s
+  * Clean apt temp directory after running the mediagen command
+
+ -- Free Ekanayaka <freee@debian.org>  Sat, 27 Sep 2008 09:54:53 +0100
+
 pdk (0.9.4) 64studio; urgency=low
 
   * Applied patches
