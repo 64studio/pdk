@@ -32,4 +32,4 @@ Description: Componentized Linux Platform Development Kit (PDK)
  specifying global configuration like branding to integrating distro-specific
  patches and managing the changes over time.
  .
- Homepage: http://componentizedlinux.org/
+ Homepage: http://trac.64studio.com/pdk
