@@ -1,3 +1,10 @@
+pdk (0.9.6) 64studio; urgency=low
+
+  * Update Homepage in debian/control
+  * Remove README, it is a duplicate of debian/copyright
+
+ -- Free Ekanayaka <freee@debian.org>  Fri, 03 Oct 2008 11:51:41 +0100
+
 pdk (0.9.5) 64studio; urgency=low
 
   * Add .gpg.conf and set debian-tag to %(versio)s
