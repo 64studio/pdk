@@ -62,6 +62,8 @@ options = { "inst-base-url": { "config-key": "base-url",
                                         "parameter": True },
             "inst-udeb-exclude-list": { "config-key": "udeb_exclude_list",
                                         "parameter": True },
+            "inst-timeout": { "config-key": "timeout",
+                                 "parameter": True },
             "inst-exclude-task": {"config-key": "exclude-task",
                                   "parameter": True } }
 
@@ -248,6 +250,7 @@ def _install_i386(cd_path):
         isohelp.close()
 
         extra_append = ''
+        timeout = '0'
 
         if inst_conf.has_key("preseed_file"):
             extra_append += 'preseed/file=/cdrom/.disk/preseed '
@@ -262,6 +265,8 @@ def _install_i386(cd_path):
             extra_append += inst_conf["boot-options"]
         if inst_conf.has_key("keymap"):
             extra_append += 'console-keymaps-at/keymap=%s ' % inst_conf["keymap"]
+        if inst_conf.has_key("timeout"):
+            timeout = inst_conf["timeout"]
 
         isocfg = open(cd_path + "/isolinux/isolinux.cfg", "w")
         isocfg.write("""
@@ -296,8 +301,8 @@ LABEL rescue
 	append vga=normal initrd=/install/initrd.gz ramdisk_size=16000 root=/dev/ram rw  rescue/enable=true --
 
 PROMPT 1
-TIMEOUT 0
-""" % (extra_append, extra_append, extra_append))
+TIMEOUT %s
+""" % (extra_append, extra_append, extra_append, timeout))
         isocfg.close()
 
     finally:
