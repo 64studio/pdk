@@ -232,9 +232,10 @@ def _install_i386(cd_path):
         _download_di_base("%s/%s" % (base_url, inst_conf["cdrom_path"]),
                           image_path, boot_image_list)
 
-        if not os.path.exists("/usr/lib/syslinux/isolinux.bin"):
-            raise RuntimeError, "you must have syslinux installed"
-        shutil.copyfile("/usr/lib/syslinux/isolinux.bin",
+        isolinux_bin = "/usr/lib/pdk/isolinux.bin"
+        if not os.path.exists(isolinux_bin):
+            raise RuntimeError, "you must have isolinux installed"
+        shutil.copyfile(isolinux_bin,
                         cd_path + "/isolinux/isolinux.bin")
 
         shutil.copyfile(image_path + "/vmlinuz",
