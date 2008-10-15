@@ -1,8 +1,9 @@
-pdk (0.9.7) UNRELEASED; urgency=low
+pdk (0.9.7) 64studio; urgency=low
 
-  * UNRELEASED
+  * Include isolinux.bin, as the one shipped by Lenny breaks pdk
+  * Add inst-timeout option to set isolinux boot timeout
 
- -- Free Ekanayaka <freee@debian.org>  Fri, 10 Oct 2008 12:53:11 +0200
+ -- Free Ekanayaka <freee@debian.org>  Wed, 15 Oct 2008 12:33:14 +0200
 
 pdk (0.9.6) 64studio; urgency=low
 
