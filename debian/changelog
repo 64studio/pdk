@@ -1,3 +1,9 @@
+pdk (0.9.8) UNRELEASED; urgency=low
+
+  * UNRELEASED
+
+ -- Free Ekanayaka <freee@debian.org>  Wed, 15 Oct 2008 22:12:06 +0200
+
 pdk (0.9.7) 64studio; urgency=low
 
   * Include isolinux.bin, as the one shipped by Lenny breaks pdk
