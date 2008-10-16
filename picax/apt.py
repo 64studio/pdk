@@ -113,6 +113,9 @@ def clean():
     base_dir = global_conf["temp_dir"] + "/apt-info"
     if os.path.exists(base_dir):
         shutil.rmtree(base_dir)
+    lock_file = "lock"
+    if os.path.isfile(lock_file):
+        os.remove(lock_file)
 
 def _find_package_in_cache(pkg_name):
     global cache
