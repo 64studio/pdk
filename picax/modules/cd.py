@@ -101,8 +101,8 @@ def create_image(index, boot_image_path):
         label_options = "-V '%s %s'" % (conf["media_options"]["label"],
                                         cd_index)
 
-    if os.system("genisoimage -o %s/img-bin%d.iso %s %s %s %s" \
-                 % (conf["dest_path"], index, genisoimage_std_args,
+    if os.system("genisoimage -o %s %s %s %s %s" \
+                 % (conf["dest_name"], genisoimage_std_args,
                     label_options, boot_args, data_path)):
         raise RuntimeError, "CD image generation failed"
 

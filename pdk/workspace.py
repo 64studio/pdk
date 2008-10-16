@@ -357,6 +357,11 @@ Generate media for a linux product.
         picax_conf['media_options']['label'] = args.opts.label
         picax_conf['cd_label'] = args.opts.label
 
+    if args.opts.output_dest:
+        picax_conf['dest_name'] = args.opts.output_dest
+    else:
+        picax_conf['dest_name'] = os.path.join(picax_conf["dest_path"], 'img-bin1.iso')
+
     picax.apt.init()
     (package_list, source_list) = \
         picax.package.get_all_distro_packages()
@@ -375,7 +380,7 @@ Generate media for a linux product.
     picax.installer.post_install()
     picax.media.create_media()
 
-mediagen = make_invokable(mediagen, 'arch', 'label')
+mediagen = make_invokable(mediagen, 'arch', 'label', 'output-dest')
 
 def add(args):
     """\\fB%prog\\fP \\fIFILES\\fP
