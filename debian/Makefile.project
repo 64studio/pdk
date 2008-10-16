@@ -1,0 +1,33 @@
+all: picax.xml core.xml
+
+picax.xml:
+	pdk abstract --label="$(suite)" --meta="$(picax_meta)" --components="$(picax_components)" picax.xml
+
+%.xml:
+	pdk abstract --packages="$($*_pkgs)" --meta="<task>standard</task>" --label="$*" $@
+	pdk resolve $@
+	pdk closure --out-file=$@ --arch=$(shell echo $(archs) | cut -f 1 -d " ") $($*_deps) $@
+	pdk upgrade $@
+
+master:
+	pdk repogen picax.xml
+	for a in $(archs); do \
+		pdk mediagen --arch=$$a -o images/$(project)_master_$$a.iso picax.xml; \
+	done
+	rm -Rf  images/$(project)_master.apt
+	mv repo images/$(project)_master.apt
+
+release: master
+	git tag -f $(version)
+
+	cp -a images/$(project)_master.apt images/$(project)_$(version).apt
+
+	for a in $(archs); do \
+		\
+		if ! pdk closure --arch=$$a picax.xml | grep -q "The components are dependency closed"; then \
+        		echo "Depedency closure check for $(project) $$a failed"; \
+			exit 1; \
+		fi ; \
+		\
+		cp images/$(project)_master_$$a.iso images/$(project)_$(version)_$$a.iso; \
+	done
