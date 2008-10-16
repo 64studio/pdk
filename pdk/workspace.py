@@ -28,6 +28,7 @@ __revision__ = '$Progeny$'
 import os
 import sys
 import stat
+import shutil
 from urlparse import urlsplit
 from itertools import chain
 from pdk.version_control import VersionControl, CommitNotFound
@@ -379,6 +380,10 @@ Generate media for a linux product.
     picax.apt.clean()
     picax.installer.post_install()
     picax.media.create_media()
+
+    for part in range(0, len(package_group)):
+        top_path = "%s/bin%d" % (picax_conf["dest_path"], part + 1)
+        shutil.rmtree(top_path)
 
 mediagen = make_invokable(mediagen, 'arch', 'label', 'output-dest')
 
