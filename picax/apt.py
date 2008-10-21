@@ -70,6 +70,10 @@ def init():
 
     conf = open("%s/apt.conf" % (base_dir,), "w")
     conf.write("""
+APT
+{
+  Architecture "%s";
+};
 Dir "%s/"
 {
   State "state/" {
@@ -78,7 +82,7 @@ Dir "%s/"
   Cache "cache/";
   Etc "%s/";
 };
-""" % (base_dir, base_dir))
+""" % (global_conf['arch'], base_dir, base_dir))
     conf.close()
 
     slist = open("%s/sources.list" % (base_dir,), "w")
