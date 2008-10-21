@@ -962,7 +962,7 @@ def run_closure(component_names, arch, outfile):
         try:
             trans.run()
         except TransactionFailed, error:
-            errors.append(str(package.loaders.values()[0]) + ' ... ' + str(error))
+            errors.append(unicode(package.loaders.values()[0]) + u' ... ' + unicode(error))
         control.commitTransactionStepped(trans, confirm=False)
 
     prog.setDone()
