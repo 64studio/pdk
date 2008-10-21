@@ -198,7 +198,8 @@ def _init():
     "Return a blank, initialized config dictionary."
 
     conf = { "repository_list": [],
-               "debug": False }
+               "debug": False,
+             "installer_options": {}}
 
     if os.environ.has_key("TMPDIR"):
         conf["temp_dir"] = os.environ["TMPDIR"]
