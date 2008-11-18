@@ -16,6 +16,7 @@ master:
 	done
 	rm -Rf  images/$(project)_master.apt
 	mv repo images/$(project)_master.apt
+	pdk log > images/$(project)_master.changelog
 
 release: master
 	git tag -f $(version)
