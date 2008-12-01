@@ -1,8 +1,19 @@
-pdk (0.9.8) UNRELEASED; urgency=low
+pdk (0.9.8) 64studio; urgency=low
 
-  * UNRELEASED
+  * [debian]
+    - generate changelog when building master images
+    - update package description
+    - add Makefile.project example
+  * [closure]
+    - use UTF-8 strings to deal with smart generated error messages
+  * [mediagen]
+    - set the architecture from global_conf in /etc/apt-info/apt.conf
+    - initialize config['installer_options'] to avoid breaking mediagen -a
+    - remove apt lock file after building
+    - remove temporary repositories after building the media
+    - set the iso file name with the output-dest option
 
- -- Free Ekanayaka <freee@debian.org>  Wed, 15 Oct 2008 22:12:06 +0200
+ -- Free Ekanayaka <freee@debian.org>  Mon, 01 Dec 2008 07:52:37 +0100
 
 pdk (0.9.7) 64studio; urgency=low
 
