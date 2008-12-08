@@ -1,3 +1,15 @@
+pdk (0.9.9) unstable; urgency=low
+
+  * [debian]
+    - format package description to have lines shortern than 80 chars
+    - move Homepage from description to the source package stanza
+    - drop picax scripts from the binary package, they are now
+      merged with the main pdk script
+    - bump standards version
+    - first upload to Debian (Closes: #508112)
+
+ -- Free Ekanayaka <freee@debian.org>  Mon, 08 Dec 2008 01:29:44 +0100
+
 pdk (0.9.8) 64studio; urgency=low
 
   * [debian]
