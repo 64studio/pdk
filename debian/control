@@ -5,6 +5,7 @@ Maintainer: Free Ekanayaka <freee@debian.org>
 Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5.0.37.2), python-all-dev, python-central (>= 0.5), funnelweb, python-pycurl, python-egenix-mxtexttools, python-xml, smartpm-core
 Standards-Version: 3.8.0
 XS-Python-Version: current
+Homepage: http://trac.64studio.com/pdk
 
 Package: pdk
 Architecture: all
@@ -31,5 +32,3 @@ Description: 64 Studio GNU/Linux Platform Development Kit (PDK)
  incorporate upstream changes to building your own custom components to
  specifying global configuration like branding to integrating distro-specific
  patches and managing the changes over time.
- .
- Homepage: http://trac.64studio.com/pdk
