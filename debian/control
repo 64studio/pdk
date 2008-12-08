@@ -3,7 +3,7 @@ Section: devel
 Priority: optional
 Maintainer: Free Ekanayaka <freee@debian.org>
 Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5.0.37.2), python-all-dev, python-central (>= 0.5), funnelweb, python-pycurl, python-egenix-mxtexttools, python-xml, smartpm-core
-Standards-Version: 3.7.2
+Standards-Version: 3.8.0
 XS-Python-Version: current
 
 Package: pdk
