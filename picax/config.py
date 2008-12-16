@@ -475,7 +475,7 @@ def _interpret_args(this_config, subprefix_arglist, arglist):
             new_repo_list.append(repo_item)
     this_config["repository_list"] = new_repo_list
 
-    if not this_config.has_key("base_path")
+    if not this_config.has_key("base_path"):
         this_config["base_path"] = arglist[0]
         this_config["base_path"] = os.path.abspath(this_config["base_path"])
     if not this_config.has_key("dest_path"):
