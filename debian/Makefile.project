@@ -10,12 +10,11 @@ picax.xml:
 	pdk upgrade $@
 
 master:
-	pdk repogen picax.xml
+	mkdir -p images
+	pdk repogen -o images/$(project)_master.apt picax.xml
 	for a in $(archs); do \
 		pdk mediagen --arch=$$a -o images/$(project)_master_$$a.iso picax.xml; \
 	done
-	rm -Rf  images/$(project)_master.apt
-	mv repo images/$(project)_master.apt
 	pdk log > images/$(project)_master.changelog
 
 release: master
