@@ -14,6 +14,7 @@ master:
 	pdk repogen -o images/$(project)_master.apt picax.xml
 	for a in $(archs); do \
 		pdk mediagen --arch=$$a -o images/$(project)_master_$$a.iso picax.xml; \
+		md5sum images/$(project)_master_$$a.iso > images/$(project)_master_$$a.iso.md5sum; \
 	done
 	pdk log > images/$(project)_master.changelog
 
