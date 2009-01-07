@@ -249,17 +249,17 @@ class Git(object):
         '''Create an empty tree object and return its tree_id.'''
         self.unlink_index()
         self.run_update_index([])
-        tree_id = self.shell_to_string('git-write-tree').strip()
+        tree_id = self.shell_to_string('git write-tree').strip()
         return tree_id
 
     def iter_diff_index(self, tree_id):
-        '''Run git-diff-index aginst the given tree.
+        '''Run git diff-index aginst the given tree.
 
         Results are run through iter_diff_files to make the iterator.
 
         Rename and break detection are enabled.
         '''
-        cmd = 'git-diff-index -z -B -M %s' % mkarg(tree_id)
+        cmd = 'git diff-index -z -B -M %s' % mkarg(tree_id)
         remote_in, remote_out, waiter = self.popen2(cmd)
         remote_in.close()
         for status, file_name, extra in self.iter_diff_files(remote_out):
@@ -267,10 +267,10 @@ class Git(object):
         waiter()
 
     def iter_diff_files(self, handle):
-        '''Iterate over null terminated results of git-diff-*.
+        '''Iterate over null terminated results of git diff-*.
 
         Yields status, filename, extra_filename; where status is the
-        status code from git-diff-*, filename is the filename, and
+        status code from git diff-*, filename is the filename, and
         extra_filename is either None or a filename involved in a
         rename or copy operation.
 
@@ -296,10 +296,10 @@ class Git(object):
 
     def run_init_db(self):
         '''Initialize a new git instance.'''
-        self.shell_to_string('git-init-db')
+        self.shell_to_string('git init-db')
 
     def iter_ls_tree(self, raw_tree, raw_files):
-        '''Run git-ls-tree against the given tree.
+        '''Run git ls-tree against the given tree.
 
         Yields stat, kind, blob_id, filename.
 
@@ -310,7 +310,7 @@ class Git(object):
         else:
             files = ''
         tree = mkarg(raw_tree)
-        cmd = 'git-ls-tree -r -z %s %s' % (tree, files)
+        cmd = 'git ls-tree -r -z %s %s' % (tree, files)
         remote_in, remote_out, waiter = self.popen2(cmd)
         remote_in.close()
         for item in NullTerminated(remote_out):
@@ -319,7 +319,7 @@ class Git(object):
         waiter()
 
     def iter_ls_files(self, files, modified_flag = False):
-        '''Run git-ls-files.
+        '''Run git ls-files.
 
         Yields filename.
 
@@ -334,7 +334,7 @@ class Git(object):
         else:
             modified_arg = ''
 
-        cmd = 'git-ls-files -z %s %s' % (modified_arg, args)
+        cmd = 'git ls-files -z %s %s' % (modified_arg, args)
         remote_in, remote_out, waiter = self.popen2(cmd)
         remote_in.close()
         for filename in NullTerminated(remote_out):
@@ -342,11 +342,11 @@ class Git(object):
         waiter()
 
     def iter_unknown_files(self):
-        '''Run git-ls-files -o to find "unknown" files.
+        '''Run git ls-files -o to find "unknown" files.
 
         Yields filename.
         '''
-        cmd = 'git-ls-files -z -o --directory --exclude-from=%s' \
+        cmd = 'git ls-files -z -o --directory --exclude-from=%s' \
               % self.exclude_file
         remote_in, remote_out, waiter = self.popen2(cmd)
         remote_in.close()
@@ -357,7 +357,7 @@ class Git(object):
 
     def run_update_index(self, files, add_flag = False,
                          remove_flag = False, force_remove_flag = False):
-        '''Run git-update-index on the given files.
+        '''Run git update-index on the given files.
 
         add_flag implies --add.
         remove_flag implies --remove.
@@ -378,7 +378,7 @@ class Git(object):
         else:
             force_remove_arg = ''
 
-        cmd = 'git-update-index -z %s %s %s --stdin' \
+        cmd = 'git update-index -z %s %s %s --stdin' \
               % (add_arg, remove_arg, force_remove_arg)
         remote_in, remote_out, waiter = self.popen2(cmd)
         for filename in files:
@@ -388,14 +388,14 @@ class Git(object):
         waiter()
 
     def run_update_index_cacheinfo(self, mode, blob_id, filename):
-        '''Run git-update-index --cacheinfo.'''
-        update_command = 'git-update-index --cacheinfo %s %s %s' \
+        '''Run git update-index --cacheinfo.'''
+        update_command = 'git update-index --cacheinfo %s %s %s' \
                          % (mode, blob_id, mkarg(filename))
         self.shell_to_string(update_command)
 
     def run_checkout_index(self, files, force_flag = False,
                            all_flag = False):
-        '''Run git-checkout-index.
+        '''Run git checkout-index.
 
         File list explodes to all files if file list is empty.
 
@@ -413,21 +413,21 @@ class Git(object):
             all_arg = ''
 
         file_args = self.quote_args(files)
-        checkout_command = 'git-checkout-index %s %s -- %s' \
+        checkout_command = 'git checkout-index %s %s -- %s' \
                            % (force_arg, all_arg, file_args)
         self.shell_to_string(checkout_command)
 
     def run_read_tree(self, tree_id):
-        '''Run git-read-tree on the given tree.'''
-        self.shell_to_string('git-read-tree %s' % mkarg(tree_id))
+        '''Run git read-tree on the given tree.'''
+        self.shell_to_string('git read-tree %s' % mkarg(tree_id))
 
     def refresh_index(self):
-        '''Run git-update-index --refresh.'''
-        self.shell_to_string('git-update-index --refresh || true')
+        '''Run git update-index --refresh.'''
+        self.shell_to_string('git update-index --refresh || true')
 
     def has_index_changed(self, tree_id):
         '''Make sure that the index file is identical to the given tree.'''
-        output = self.shell_to_string('git-diff-index --cached %s'
+        output = self.shell_to_string('git diff-index --cached %s'
                                       % mkarg(tree_id))
         if output.strip():
             return True
@@ -442,11 +442,11 @@ class Git(object):
         if self.is_new():
             parent_arg = ''
         else:
-            parent = self.shell_to_string('git-rev-parse HEAD').strip()
+            parent = self.shell_to_string('git rev-parse HEAD').strip()
             parent_arg = '-p %s' % parent
 
-        tree_id = self.shell_to_string('git-write-tree').strip()
-        cmd = 'git-commit-tree %s %s' % (tree_id, parent_arg)
+        tree_id = self.shell_to_string('git write-tree').strip()
+        cmd = 'git commit-tree %s %s' % (tree_id, parent_arg)
 
         remote_in, remote_out, waiter = self.popen2(cmd)
         if commit_message_file:
@@ -465,7 +465,7 @@ class Git(object):
         else:
             fd_no, temp_file = mkstemp('.txt', 'commit-msg')
             os.close(fd_no)
-            self.shell_to_string('git-status > %s' % temp_file)
+            self.shell_to_string('git status > %s' % temp_file)
             editor = os.environ.get('EDITOR', 'vi')
             edit_waiter = self.popen2('%s %s' % (editor, temp_file), False)
             edit_waiter()
@@ -478,8 +478,8 @@ class Git(object):
         commit_id = remote_out.read().strip()
         remote_out.close()
         waiter()
-        self.shell_to_string('git-update-ref HEAD %s' % commit_id)
-        self.shell_to_string('git-update-server-info')
+        self.shell_to_string('git update-ref HEAD %s' % commit_id)
+        self.shell_to_string('git update-server-info')
 
     def filter_refs(self, raw_refs):
         '''Return a list of refs that are given and present.
@@ -492,12 +492,12 @@ class Git(object):
         return refs_here & refs
 
     def get_rev_list(self, head_ids, limits):
-        '''Invoke git-rev-list on the given commit_ids.
+        '''Invoke git rev-list on the given commit_ids.
 
         limits is used to limit the rev-list generation.
         '''
         limit_string = ' '.join([ mkarg('^%s') % l for l in limits ])
-        command = 'git-rev-list %s %s' % (self.quote_args(head_ids),
+        command = 'git rev-list %s %s' % (self.quote_args(head_ids),
                                           limit_string)
         output = self.shell_to_string(command)
         refs_here = [ i.strip() for i in output.split() ]
@@ -515,12 +515,12 @@ class Git(object):
         '''Return a file handle + waiter streaming a git pack.'''
 
         refs_not_needed = self.filter_refs(raw_refs_not_needed)
-        command_string = 'git-rev-list --objects '
+        command_string = 'git rev-list --objects '
         for ref in refs_wanted:
             command_string += '%s ' % ref
         for ref in refs_not_needed:
             command_string += '^%s ' % ref
-        command_string += '| git-pack-objects --stdout'
+        command_string += '| git pack-objects --stdout'
         self.shell_to_string(command_string)
         remote_in, remote_out, waiter = self.popen2(command_string)
         remote_in.close()
@@ -528,7 +528,7 @@ class Git(object):
 
     def get_unpack_handle(self):
         '''Return a file handle + waiter for receiving a git pack.'''
-        command_string = 'git-unpack-objects'
+        command_string = 'git unpack-objects'
         remote_in, remote_out, waiter = self.popen2(command_string)
         remote_out.close()
         return popen_wrap_handle(remote_in, waiter)
@@ -543,7 +543,7 @@ class Git(object):
 
     def get_commit_id(self, ref_name):
         '''Return the commit_id for a given name.'''
-        command_string = 'git-rev-parse %s' % ref_name
+        command_string = 'git rev-parse %s' % ref_name
         try:
             commit_id = self.shell_to_string(command_string).strip()
         except SemanticError:
@@ -552,19 +552,19 @@ class Git(object):
 
     def note_ref(self, upstream_name, commit_id):
         '''Note a commit id as refs/heads/[upstream_name].'''
-        self.shell_to_string('git-update-ref %s %s'
+        self.shell_to_string('git update-ref %s %s'
                              % (mkarg(upstream_name), commit_id))
 
     def get_all_refs(self):
         '''List all raw commit_ids found under the git refs directory.'''
-        command_string = 'git-rev-parse --all'
+        command_string = 'git rev-parse --all'
         output = self.shell_to_string(command_string)
         commit_ids = [ i.strip() for i in output.split() ]
         return commit_ids
 
     def is_new(self):
         '''Is this a "new" (no commits) git repository?'''
-        command_string = 'git-rev-parse HEAD 2>/dev/null'
+        command_string = 'git rev-parse HEAD 2>/dev/null'
         try:
             self.shell_to_string(command_string)
         except SemanticError:
@@ -609,11 +609,11 @@ class Git(object):
 
     def get_commit(self, commit_id):
         '''Get the contents of a commit as a string.'''
-        return self.shell_to_string('git-cat-file commit %s' % commit_id)
+        return self.shell_to_string('git cat-file commit %s' % commit_id)
 
     def get_blob(self, blob_id):
         '''Get a wrapped filehandle of a blob.'''
-        command = 'git-cat-file blob %s' % mkarg(blob_id)
+        command = 'git cat-file blob %s' % mkarg(blob_id)
         remote_in, remote_out, waiter = self.popen2(command)
         remote_in.close()
         return popen_wrap_handle(remote_out, waiter)
@@ -770,7 +770,7 @@ class VersionControl(object):
         else:
             git.run_read_tree('HEAD')
             git.refresh_index()
-        # If no files are provided, git-ls-files will list all files.
+        # If no files are provided, git ls-files will list all files.
         # We rely on that.
         removed_files = add_remove.filter_remove_files(files)
         git.run_update_index(removed_files, force_remove_flag = True)
@@ -811,7 +811,7 @@ class VersionControl(object):
 
         self.alt_git.run_update_index(implicit_add_files, add_flag = True)
         self.alt_git.run_commit(commit_message_file, commit_message)
-        shell_command('git-update-index --add --remove --refresh %s' % " ".join([ f for f in all_files ]))
+        shell_command('git update-index --add --remove --refresh %s' % " ".join([ f for f in all_files ]))
 
         add_remove.clear(files)
 
@@ -946,6 +946,6 @@ class VersionControl(object):
                       'workspace.'
             self.alt_git.merge('HEAD', branch_name, silent)
             add_remove.clear([])
-        shell_command('git-reset --hard HEAD')
+        shell_command('git reset --hard HEAD')
 
 # vim:set ai et sw=4 ts=4 tw=75:

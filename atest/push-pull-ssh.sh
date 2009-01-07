@@ -125,7 +125,7 @@ EOF
     pdk commit -m "git-production testing"
 
     # Send change from customer to integration.
-    git-diff-tree -p HEAD^ HEAD >patch.txt
+    git diff-tree -p HEAD^ HEAD >patch.txt
 
     # really this file would be sent by email.
     cp patch.txt $tmp_dir/integration/patch.txt
@@ -138,7 +138,7 @@ popd
 
 pushd integration
     # No direct pdk support for this. This case is an outlier.
-    git-apply patch.txt
+    git apply patch.txt
     pdk commit -m "Required commit remark"
 
 # -----------------------------------------------------------

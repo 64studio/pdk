@@ -31,7 +31,7 @@ mkdir -p schema1/cache/md5
 ln -s $tmp_dir/schema1/work/.git schema1/VC
 touch schema1/work/somefile
 touch schema1/channels.xml
-GIT_DIR=schema1/work/.git git-init-db
+GIT_DIR=schema1/work/.git git init-db
 touch schema1/work/.git/remotes/some-source
 
 pushd schema1/work

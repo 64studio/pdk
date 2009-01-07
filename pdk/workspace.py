@@ -283,7 +283,7 @@ def create_workspace(workspace_root):
     vc.create()
     os.symlink(pjoin('etc', 'git'), pjoin(ws.location, '.git'))
     open(pjoin(ws.config_dir, 'schema'), 'w').write('%d\n' % schema_target)
-    shell_command('cd %s && git-init' % workspace_root)
+    shell_command('cd %s && git init' % workspace_root)
     return ws
 
 def create(args):

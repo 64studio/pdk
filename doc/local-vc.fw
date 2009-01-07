@@ -42,7 +42,7 @@ scripts can trigger if they update files more than once per second
 without changing their sizes. This is not a big problem in interactive
 use, so we are going to wait on the git folks to work this out on
 their own, or just not worry about it. The simple workaround is for
-script writers to invoke git-update-index when they change files.
+script writers to invoke git update-index when they change files.
 
 @t table_of_contents
 
@@ -181,13 +181,13 @@ EOF
     unset EDITOR
     assert_status "after commit with EDITOR" 4 2 2 3 <<EOF
 EOF
-    git-cat-file commit HEAD | grep fake
+    git cat-file commit HEAD | grep fake
 
     echo info >>file-a
     pdk commit -m 'Message from command line.'
     assert_status "after commit with EDITOR" 5 2 2 3 <<EOF
 EOF
-    git-cat-file commit HEAD | grep "command line"
+    git cat-file commit HEAD | grep "command line"
 
 popd
 
@@ -481,7 +481,7 @@ EOF
 
     # watch for regression where cat only looks at the git index.
     echo 3 >>file-a
-    GIT_INDEX_FILE=etc/git/pdk/pdk-index git-update-index file-a
+    GIT_INDEX_FILE=etc/git/pdk/pdk-index git update-index file-a
     pdk cat file-a >file-a.cat
     diff -u - file-a.cat <<EOF
 1
