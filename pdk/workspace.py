@@ -52,7 +52,7 @@ from pdk.command_base import make_invokable
 from commands import getoutput
 from cStringIO import StringIO
 from smart.transaction import Transaction, PolicyInstall, PolicyUpgrade, ChangeSetSplitter
-from smart import init, hooks, sysconf, iface
+from smart import init, deinit, hooks, sysconf, iface
 from smart.const import ALWAYS, NEVER, INSTALL, REMOVE
 from smart.control import ChangeSet
 from smart.cache import Cache as SmartCache
@@ -1018,6 +1018,7 @@ def run_closure(component_names, arch, outfile):
         print "Wrote %d missing packages into %s" % (missing,outfile)
     else:
         print "The components are dependency closed"
+    deinit()
         
 def closure(args):
     """usage: pdk closure COMPONENTS
