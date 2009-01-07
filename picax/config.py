@@ -130,6 +130,12 @@ main_options = { "help":
                    "parameter-type": "multistring",
                    "parameter-desc": "path[:path...]",
                    "doc": ("Paths to mounted media to use as base",)},
+                 "base-path":
+                 { "config-key" : "base_path",
+                   "parameter": True,
+                   "parameter-type": "string",
+                   "parameter-desc": "filename",
+                   "doc": ("Path to repository to get packages from",)},
                  "read-config":
                  { "config-key": "input_config_path",
                    "parameter": True,
