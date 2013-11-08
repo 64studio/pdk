@@ -23,18 +23,19 @@
 # This script builds, installs, and runs acceptance tests for a package
 # build.
 
+# Usage:
+#
+# ./release-source.sh <version>
+#
+# where <version> is the git tag you want to release
+
 set -e
 set -x
 
 tag="$1"
-version=$(echo $tag | awk -v FS=- '{print $2}')
-
-if [ -z "$version" ]; then
-    echo >&2 "Can't parse version from tag."
-    exit 1
-fi
 
 export_base=$tag
-git tar-tree $tag $export_base | gzip > pdk_$version.tar.gz
+
+git archive --format=tar --worktree-attributes --prefix=pdk-$tag/ $tag | gzip > pdk_$tag.tar.gz
 
 # vim:set ai et sw=4 ts=4 tw=75:
