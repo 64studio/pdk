@@ -1,4 +1,4 @@
-This document assumes that you've already installed PDK and have a workspace to work in. One way to reach that state is to follow the steps in [GettingStarted Workspace Setup].
+This document assumes that you've already installed PDK and have a workspace to work in. One way to reach that state is to follow the steps in [Workspace Setup](GettingStarted.md).
 
 Don't miss the page about component maintenance, as it is going to be a bigger part of your world after you put together your initial components. The link is at the bottom of this page. 
 
@@ -49,13 +49,9 @@ This downloads metadata for all the configured channels and stores it. Now that 
 
 	
 	pdk resolve apache.xml
-	
 
+or
 
-# or
-
-
-	
 	pdk resolve -c lucid apache.xml
 	
 
@@ -152,9 +148,9 @@ To use all the channels at once, use no -c options. You can use more than one -c
 
 Resolving abstract references of a component descriptor offers two modes of operation called "sticks" and "stars":
 
-    * A "Sticks" approach is indicated by the presence of an abstract binary package reference in the descriptor. At resolve time pdk will search channels for sources which appear to satisfy source closure for the newly resolved binary. 
+A "Sticks" approach is indicated by the presence of an abstract binary package reference in the descriptor. At resolve time pdk will search channels for sources which appear to satisfy source closure for the newly resolved binary. 
 
-    * A "Stars" approach is indicated by the presence of an abstract source package reference. At resolve time pdk will search for binaries which appear to be built from that source. 
+A "Stars" approach is indicated by the presence of an abstract source package reference. At resolve time pdk will search for binaries which appear to be built from that source. 
 
 The big idea behind these terms is that when assembling components, you find two kinds of packages, those you explicitly want, and those which are strictly present to provide the most primitive kinds of closure.
 

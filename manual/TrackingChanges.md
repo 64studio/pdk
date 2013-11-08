@@ -15,9 +15,7 @@ For instance, after you've built and resolved some components, you should add an
 
 And you can do that all day.
 
-Where did the commits go though? We use git under the covers, so committing to your local repository is the norm. When you are ready to share or publish your commits, you use the push command.
-
-# assuming you have permission to do this...
+Where did the commits go though? We use git under the covers, so committing to your local repository is the norm. When you are ready to share or publish your commits, you use the push command, assuming you have permission to do this...
 
 	
 	ssh elsewhere pdk workspace create /var/lib/projects/acme-project
