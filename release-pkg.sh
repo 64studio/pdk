@@ -22,6 +22,16 @@
 
 # This script builds, installs, and runs acceptance tests for a package
 # build.
+#
+# Usage:
+#
+# First, run release-source.sh or get a tarball from
+# https://github.com/64studio/pdk/releases then run:
+#
+# ./release-pkg.sh <version> <tarballname>
+#
+# where <version> is the git tag for the release you want
+
 
 set -e
 set -x
