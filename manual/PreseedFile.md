@@ -21,4 +21,4 @@ Open your editor and create a new `mypreseed` file in your workspace containing 
 
 This example preseed file instructs the debian installer to use the CDROM drive as main APT source media and to automatically install the `standard` task, which will pull all packages of your Ubuntu/hardy remix.
 
-You can now actually [BuildingMedia build your installation media].
+You can now actually [build your installation media](BuildingMedia.md).

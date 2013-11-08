@@ -48,7 +48,7 @@ Early in PDK's life there was only one command, and it was resolve. As we gained
 
 The next document to read is:
 
-*[TrackingChanges Tracking Your Changes Over Time]
+[Tracking Your Changes Over Time](TrackingChanges.md)
 
 We've been crowing about how this thing is supposed to be "Version Control for Distributions." It's implemented and working well. 
 

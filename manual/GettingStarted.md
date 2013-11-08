@@ -83,4 +83,4 @@ You are ready to pull the channel's components:
 
 The PDK is now set up and ready to use. For more information, please see the following document:
 
-* [MakingRepo Making Repository]
+* [Making Repository](MakingRepo.md)

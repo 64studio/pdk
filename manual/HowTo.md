@@ -1,11 +1,11 @@
 This brief guide outlines how to install/set up the Platform Development Kit (PDK) and begin the process of creating a custom distribution. You will learn how to create a minimal Ubuntu-based distribution using PDK, resulting in a bootable ISO image, which will install a minimal GNOME desktop environment.
 
-* [GettingStarted Workspace Setup]
+* [Workspace Setup](GettingStarted.md)
 
-* [MakingRepo Making Repositories]
+* [Making Repositories](MakingRepo.md)
 
-* [PreseedFile Write a preseed file]
+* [Write a preseed file](PreseedFile.md)
 
-* [BuildingMedia Building Media]
+* [Building Media](BuildingMedia.md)
 
-* [UpdateDistro Updating a distro]
+* [Updating a distro](UpdateDistro.md)

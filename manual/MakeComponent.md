@@ -164,6 +164,6 @@ NOTE: Don't specify abstract package references for both source and binaries in 
 
 The following document describes the real work in distribution maintenance. It's really easy to maintain components with PDK.
 
-* [MaintainComponent How to Maintain Your Component]
+[How to Maintain Your Component](MaintainComponent.md)
  
  

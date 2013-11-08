@@ -84,6 +84,8 @@ Git treats the first line of a commit as the title for the commit. It shows up i
 
 We recommend that you spend a little time getting to know git, as understanding it may help you figure out how to back out of tricky situations when they arise.
 
-    * Git Documentation (http://www.kernel.org/pub/software/scm/git/docs/) 
+    [Git Documentation] (http://www.kernel.org/pub/software/scm/git/docs/) 
 
 Once you've been through that, keep in mind that the only pdk commands you must use are push and pull, to move cache files around. All the git commands for diffing, branching, merging, resetting, committing, and coordinating with others should work fine. Many of PDK's operations take place using an alternate index file, so you should be able to work unimpeded, even in tandem with pdk's commands. Keep in mind that pdk add does not invoke git add. So have fun.
+
+[How To](HowTo.md)

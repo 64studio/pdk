@@ -47,3 +47,5 @@ You can now run
 	
 
 and enjoy your new ISO image in `images/img-bin1.iso`.
+
+[How To](HowTo.md)

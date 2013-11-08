@@ -137,5 +137,5 @@ Auditing
 
 If this sounds interesting to you, you can start playing with the software immediately.
 
-    * [GettingStarted Getting started with the Platform Development Kit (PDK)]
+    * [Getting started with PDK](GettingStarted.md)
  

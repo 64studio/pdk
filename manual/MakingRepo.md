@@ -45,4 +45,4 @@ outputs the structure of nice poolified apt repository.
 Once the download has completed (a long long process, sorry) you should find that the repogen runs too quickly considering that hundreds of megabytes, maybe even gigabytes of packages have been deposited in the repository. This is because we use hard links to put the packages in the repository. It is, therefore, safe to delete the whole repository, and repository creation can be done quickly once the packages are in your local cache.
 
 
-Next: [PreseedFile Write a preseed file]
+Next: [Write a preseed file](PreseedFile.md)

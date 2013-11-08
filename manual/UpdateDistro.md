@@ -69,3 +69,5 @@ make release
 
 as well, the new images will be put in images/. However I'd suggest to
 first test the generated master ISOs first. 
+
+[How To](HowTo.md)

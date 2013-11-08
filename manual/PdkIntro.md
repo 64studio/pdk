@@ -1,7 +1,5 @@
 You can think of PDK as version control for distributions - it's intended to be a full suite of tools for building and maintaining a GNU/Linux distribution, from assembling a full distro using a set of prebuilt components to incorporating upstream changes, building your own custom components, specifying global configuration such as branding, integrating distro-specific patches, and managing the evolution of these changes over time.
 
-TODO: add TOC macro here
-
 # Our Vision
 
 The Platform Development Kit (PDK) is intended to be a collection of tools that enables the developer to (1) easily and efficiently assemble Community/64 Studio supplied components and the developer's own custom components into the desired platform configuration (a.k.a. a _Custom Distribution'' or a ''product_), and (2) manage and customize that product more effectively after release to end-users.
@@ -87,4 +85,4 @@ Git is a well thought out infrastructure, and lends itself to building a DVC pro
 
 If this sounds interesting to you, you can start playing with the software immediately.
 
-[HowTo How to build a GNU/Linux distro with PDK]
+[How to build a GNU/Linux distro with PDK](HowTo.md)

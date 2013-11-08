@@ -8,6 +8,6 @@ Now we have a document included with PDK which shows through example scripts how
 
 You should be able to read through the first example in 5 minutes and it might even solve an immediate problem for you.
 
-So, without further ado, here's a link to [The PDK API in 5 minutes](api-in-5min.fw).
+So, without further ado, here's a link to [The PDK API in 5 minutes](doc/api-in-5min.fw).
 
 For the most accurate information check the /usr/share/doc/pdk/ directory shipped with pdk package. 
