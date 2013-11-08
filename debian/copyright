@@ -1,7 +1,7 @@
 This is the 64 Studio Platform Development Kit (PDK).
 
     Copyright 2005 Progeny Linux Systems, Inc.
-    Copyright 2006-2008 64 Studio Ltd.
+    Copyright 2006-2013 64 Studio Ltd.
 
     PDK is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by
@@ -20,6 +20,6 @@ This is the 64 Studio Platform Development Kit (PDK).
 See /usr/share/common-licenses/GPL-2 for the full text of the
 GPL, and the individual files for specifics.
 
-You can find contact information and documentation at
+You can find PDK sources and documentation at
 
-http://trac.64studio.com/pdk/
+https://github.com/64studio/pdk/

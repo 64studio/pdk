@@ -1,14 +1,14 @@
 # Installation
 
-First of all you have to install the `pdk` package. You may install it on any recent Ubuntu or Debian system.
+First of all you have to install the `pdk` package. You can install it on any recent Ubuntu or Debian system.
 
-If you are running Ubuntu/hardy or greater add the following line to your `/etc/apt/sources.list`:
+If you are running Ubuntu add the following line to your `/etc/apt/sources.list`:
 
 	
 	deb http://apt.64studio.com/backports hardy-backports main
 	
 
-while if you are running Debian/lenny or greater:
+while if you are running Debian or greater:
 
 	
 	deb http://apt.64studio.com/backports lenny-backports main

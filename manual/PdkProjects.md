@@ -6,4 +6,4 @@ GNU/Linux distributions created and managed with PDK include:
 
 * [Trinity Audio Group Indamixx](http://www.indamixx.com/)
 
-* [MythOS](http://trac.64studio.com/mythos/)
+* [MythOS Ares](http://pdk.64studio.com/projects/ares/) and [MythOS Eros](http://pdk.64studio.com/projects/eros/) 
