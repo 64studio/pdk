@@ -1,3 +1,9 @@
+pdk (1.0.0) unstable; urgency=low
+
+   - update packaging for Wheezy
+
+ -- Daniel James <daniel@64studio.com>  Fri, 13 Dec 2013 16:11:01 +0000
+
 pdk (0.9.9) unstable; urgency=low
 
   * [debian]

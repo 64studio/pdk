@@ -3,13 +3,13 @@ Section: devel
 Priority: optional
 Maintainer: Free Ekanayaka <freee@debian.org>
 Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5.0.37.2), python-all-dev, python-central (>= 0.5), funnelweb, python-pycurl, python-egenix-mxtexttools, smartpm-core
-Standards-Version: 3.8.0
-XS-Python-Version: current
+Standards-Version: 3.9.4
+X-Python-Version: >=2.7
 Homepage: https://github.com/64studio/pdk/
 
 Package: pdk
 Architecture: all
-Depends: ${shlibs:Depends}, ${python:Depends}, git-core (>= 1.3), python-apt, python-celementtree, python-pycurl | python2.3-pycurl, smartpm-core, python-egenix-mxtexttools, genisoimage, rpm
+Depends: python (<< 2.8), python (>= 2.7), python-support (>= 0.90.0), git-core (>= 1.3), python-apt, python-pycurl, smartpm-core, python-egenix-mxtexttools, genisoimage, rpm
 Conflicts: picax
 Replaces: picax
 Provides: picax
