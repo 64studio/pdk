@@ -20,7 +20,7 @@
 
 from StringIO import StringIO as stringio
 from pdk.test.utest_util import Test
-from cElementTree import ElementTree, Element, SubElement, Comment, \
+from xml.etree.cElementTree import ElementTree, Element, SubElement, Comment, \
      ProcessingInstruction
 
 from pdk.util import split_pipe, gen_fragments, default_block_size, \

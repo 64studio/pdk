@@ -39,7 +39,7 @@ import pycurl
 from cStringIO import StringIO
 from xml.etree.cElementTree import ElementTree
 from xml.etree.ElementTree import XMLTreeBuilder
-from xml.sax.writer import XmlWriter
+from pdk.xml_legacy.sax.writer import XmlWriter
 from pdk.progress import ConsoleProgress, CurlAdapter
 from pdk.exceptions import ConfigurationError, SemanticError, InputError
 

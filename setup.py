@@ -28,7 +28,12 @@ from distutils.core import setup
 
 setup(name="pdk",
       scripts=["bin/pdk"],
-      packages=["pdk", "picax", "picax.modules", "pdk.test", "picax.test", "smart.channels"],
+      packages=["pdk", "pdk.xml_legacy", "pdk.xml_legacy.parsers",
+                "pdk.xml_legacy.parsers.xmlproc",
+                "pdk.xml_legacy.utils", "pdk.xml_legacy.sax",
+                "pdk.xml_legacy.sax.drivers", "pdk.xml_legacy.sax.drivers2",
+                "picax", "picax.modules",
+                "pdk.test", "picax.test", "smart.channels"],
       py_modules=["hashfile"])
 
 # vim:set ai et sw=4 ts=4 tw=75:
