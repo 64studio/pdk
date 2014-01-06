@@ -227,7 +227,7 @@ class PackageFactory:
         self.distro = distro
         self.component = component
         self.package_file = package_file_stream
-        self.package_parser = apt_pkg.ParseTagFile(package_file_stream)
+        self.package_parser = apt_pkg.TagFile(package_file_stream)
         self.eof = False
         self.last_pos = None
 

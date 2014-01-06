@@ -114,12 +114,12 @@ def _read_task_info():
     packages_path = "%s/dists/%s/%s/binary-%s/Packages" \
                     % (conf["base_path"], distro, component, conf["arch"])
     packages_file = open(packages_path)
-    packages = apt_pkg.ParseTagFile(packages_file)
+    packages = apt_pkg.TagFile(packages_file)
 
-    while packages.Step() == 1:
-        if packages.Section.has_key("Task"):
-            pkg = packages.Section["Package"]
-            task = packages.Section["Task"]
+    while packages.step() == 1:
+        if packages.section.has_key("Task"):
+            pkg = packages.section["Package"]
+            task = packages.section["Task"]
             if not task_info.has_key(task):
                 task_info[task] = []
             task_info[task].append(pkg)

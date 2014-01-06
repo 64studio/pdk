@@ -331,9 +331,9 @@ class AptDebSection(object):
     def iter_apt_tags(self):
         '''Iterate over apt tag section objects in self.channel_file.'''
         handle = open(self.channel_file[0:-3])
-        apt_iterator = apt_pkg.ParseTagFile(handle)
-        while apt_iterator.Step():
-            yield apt_iterator.Section
+        apt_iterator = apt_pkg.TagFile(handle)
+        while apt_iterator.step():
+            yield apt_iterator.section
         handle.close()
 
     def iter_as_packages(self, tags_iterator):

@@ -183,10 +183,10 @@ def get_package_data(pkg_name_or_ver):
     filename = version.FileList[0][0].FileName
 
     fo = open(filename)
-    tag = apt_pkg.ParseTagFile(fo)
+    tag = apt_pkg.TagFile(fo)
     tag_valid = 1
     while tag_valid:
-        if tag.Section["Package"] == version.ParentPkg.Name:
+        if tag.section["Package"] == version.ParentPkg.Name:
             break
         tag_valid = tag.Step()
 
@@ -194,8 +194,8 @@ def get_package_data(pkg_name_or_ver):
         raise RuntimeError, "could not find package in its cache file"
 
     results = {}
-    for key in tag.Section.keys():
-        results[key] = tag.Section[key]
+    for key in tag.section.keys():
+        results[key] = tag.section[key]
 
     fo.close()
     return results
