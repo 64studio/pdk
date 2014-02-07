@@ -1114,13 +1114,13 @@ def abstract(args):
                 if skip:
                     continue
 
-                if sections.Find(tag):
+                if sections.find(tag):
                     if key == "*": # Wildcard
                         if ghost.name not in packages:
                             packages.append(ghost.name)
                         continue
                     try:
-                        sections.Find(tag).replace(' ','').split(',').index(key)
+                        sections.find(tag).replace(' ','').split(',').index(key)
                         if ghost.name not in packages:
                             packages.append(ghost.name)
                     except ValueError:
