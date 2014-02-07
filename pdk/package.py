@@ -240,7 +240,7 @@ class _Dsc(object):
 
     def parse(self, control, blob_id):
         """Parse control file contents. Returns a package object."""
-        tags = apt_pkg.ParseSection(control)
+        tags = apt_pkg.TagSection(control)
         return self.parse_tags(tags, blob_id)
 
     def parse_tags(self, apt_tags, blob_id):
@@ -337,7 +337,7 @@ class _Deb(object):
 
     def parse(self, control, blob_id):
         """Parse control file contents. Returns a package object."""
-        tags = apt_pkg.ParseSection(control)
+        tags = apt_pkg.TagSection(control)
         return self.parse_tags(tags, blob_id)
 
     def parse_tags(self, apt_tags, blob_id):

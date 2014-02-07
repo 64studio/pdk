@@ -1091,7 +1091,7 @@ def abstract(args):
 
             section_iterator = section.iter_package_info()
             for ghost, header, blob_id, locator in section_iterator:
-                sections = apt_pkg.ParseSection(header)
+                sections = apt_pkg.TagSection(header)
                 if ghost.type != type:
                     continue
 
