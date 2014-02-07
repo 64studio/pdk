@@ -395,7 +395,7 @@ class _Deb(object):
     def extract_header(self, filename):
         """Extract control file contents from a deb package."""
         handle = open(filename)
-        control = apt_inst.DebFile.control.extractdata(handle)
+        control = apt_inst.DebFile(handle).control.extractdata("control")
         handle.close()
         return sanitize_deb_header(control)
 
