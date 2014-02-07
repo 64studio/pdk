@@ -20,7 +20,7 @@
 #   along with PDK; if not, write to the Free Software Foundation,
 #   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-DEB_PYTHON_SYSTEM=pysupport
+DEB_PYTHON2_MODULE_PACKAGES=pdk
 
 #include /usr/share/cdbs/1/rules/buildcore.mk
 include /usr/share/cdbs/1/rules/debhelper.mk
