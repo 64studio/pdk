@@ -188,7 +188,7 @@ def get_package_data(pkg_name_or_ver):
     while tag_valid:
         if tag.section["Package"] == version.ParentPkg.Name:
             break
-        tag_valid = tag.Step()
+        tag_valid = tag.step()
 
     if not tag_valid:
         raise RuntimeError, "could not find package in its cache file"

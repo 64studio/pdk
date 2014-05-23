@@ -231,15 +231,15 @@ class PackageFactory:
         self.eof = False
         self.last_pos = None
 
-        self.current_pos = self.package_parser.Offset()
+        self.current_pos = self.package_parser.offset()
 
     def _next_package(self):
         if self.eof:
             return
 
         self.last_pos = self.current_pos
-        self.eof = not self.package_parser.Step()
-        self.current_pos = self.package_parser.Offset()
+        self.eof = not self.package_parser.step()
+        self.current_pos = self.package_parser.offset()
 
     def get_next_package(self):
         """Retrieve the next set of package information from the index,
@@ -252,20 +252,20 @@ class PackageFactory:
         if self.eof:
             return None
 
-        if self.package_parser.Section.has_key("Binary"):
+        if self.package_parser.section.has_key("Binary"):
             return SourcePackage(self.base_path, self.package_file.name,
                                  self.last_pos,
-                                 self.package_parser.Section,
+                                 self.package_parser.section,
                                  self.distro, self.component)
-        elif self.package_parser.Section["Filename"][-4:] == "udeb":
+        elif self.package_parser.section["Filename"][-4:] == "udeb":
             return UBinaryPackage(self.base_path, self.package_file.name,
                                   self.last_pos,
-                                  self.package_parser.Section,
+                                  self.package_parser.section,
                                   self.distro, self.component)
         else:
             return BinaryPackage(self.base_path, self.package_file.name,
                                  self.last_pos,
-                                 self.package_parser.Section,
+                                 self.package_parser.section,
                                  self.distro, self.component)
 
     def get_packages(self):
