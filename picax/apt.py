@@ -108,7 +108,7 @@ Dir "%s/"
     apt_pkg.read_config_file(apt_pkg.config, "%s/apt.conf" % (base_dir,))
     apt_pkg.init_system()
 
-    cache = apt_pkg.GetCache()
+    cache = apt_pkg.Cache()
     global_conf["apt_path"] = base_dir
 
 def clean():
@@ -149,7 +149,7 @@ def find_package_uri(pkg_name):
         if full_uri:
             break
 
-        pkg_records = apt_pkg.GetPkgRecords(cache)
+        pkg_records = apt_pkg.PackageRecords(cache)
         pkg_records.Lookup(pkg_version.FileList[0])
         pkg_path = pkg_records.FileName
 
