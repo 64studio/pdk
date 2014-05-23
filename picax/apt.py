@@ -104,9 +104,9 @@ Dir "%s/"
 
     # Initialize the python-apt bindings.
 
-    apt_pkg.InitConfig()
-    apt_pkg.ReadConfigFile(apt_pkg.Config, "%s/apt.conf" % (base_dir,))
-    apt_pkg.InitSystem()
+    apt_pkg.init_config()
+    apt_pkg.read_config_file(apt_pkg.config, "%s/apt.conf" % (base_dir,))
+    apt_pkg.init_system()
 
     cache = apt_pkg.GetCache()
     global_conf["apt_path"] = base_dir
