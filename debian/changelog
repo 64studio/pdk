@@ -1,8 +1,8 @@
 pdk (1.0.0) unstable; urgency=low
 
-   - update packaging for Wheezy
+   - update packaging for Debian jessie
 
- -- Daniel James <daniel@64studio.com>  Fri, 13 Dec 2013 16:11:01 +0000
+ -- Daniel James <daniel@64studio.com>  Thu, 16 Jun 2016 16:55:01 +0100
 
 pdk (0.9.9) unstable; urgency=low
 

@@ -3,7 +3,7 @@ Section: devel
 Priority: optional
 Maintainer: Daniel James <daniel@64studio.com>
 Build-Depends: cdbs (>= 0.4.90~), debhelper (>= 9.20120909), python-all (>=2.6.6-3~), dh-python, funnelweb, python-pycurl, python-egenix-mxtexttools, smartpm-core
-Standards-Version: 3.9.4
+Standards-Version: 3.9.6
 X-Python-Version: >=2.7
 Homepage: https://github.com/64studio/pdk/
 
