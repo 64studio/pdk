@@ -11,12 +11,6 @@ PDK is written in Python, the source code is well commented and contains documen
 
 If you are interested in PDK development, and would like write access to the PDK wiki or bug tickets, please [contact us](http://www.64studio.com/contact) at 64 Studio.
 
-*Downloads*
-
-You can get Debian packages for the latest version of PDK here:
-
-http://apt.64studio.com/backports/pool/main/p/pdk/
-
 *Documentation*
 
 [PDK Introduction](manual/PdkIntro.md)
@@ -28,7 +22,3 @@ http://apt.64studio.com/backports/pool/main/p/pdk/
 [Tracking Your Changes Over Time](manual/TrackingChanges.md)
 
 [The PDK API](manual/PdkApi.md)
-
-*Mailing List*
-
-http://lists.64studio.com/mailman/listinfo/pdk-devel
