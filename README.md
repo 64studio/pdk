@@ -22,7 +22,3 @@ If you are interested in PDK development, and would like write access to the PDK
 [Tracking Your Changes Over Time](manual/TrackingChanges.md)
 
 [The PDK API](manual/PdkApi.md)
-
-*Mailing List*
-
-http://lists.64studio.com/mailman/listinfo/pdk-devel
