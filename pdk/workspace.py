@@ -1133,8 +1133,8 @@ def abstract(args):
         for p in args.opts.components.split(','):
 	   components.append(p.strip(' \t'))
 
-    if not packages and not components:
-        packages=sys.stdin.read().split("\n")
+    #if not packages and not components:
+    #    packages=sys.stdin.read().split("\n")
 
     contents=''
 
