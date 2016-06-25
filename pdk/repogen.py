@@ -27,7 +27,8 @@ import os
 import os.path
 from time import strftime, gmtime
 import re
-import md5
+import hashfile
+import hashlib
 from sets import Set
 from itertools import chain
 from commands import mkarg
@@ -50,7 +51,7 @@ deb_binary_field_order = [
     "Architecture", 'arch', "Source", "Version", 'version', "Replaces",
     "Provides", "Depends", "Pre-Depends", "Recommends",
     "Suggests", "Conflicts", "Conffiles", "Filename",
-    "Size", "MD5Sum", "SHA1Sum", "Description", "Task" ]
+    "Size", "MD5sum", "SHA1Sum", "Description", "Task" ]
 
 deb_source_field_order = [
     "Package", "Source", 'name', "Binary", "Version", 'version',
@@ -213,17 +214,27 @@ class DebianPoolInjector(object):
 
 
     def get_file_size_and_hash(self):
-        """Return (size, md5) for the main package file."""
+        """Return (size, md5, sha1, sha256, sha512)
+        for the main package file.
+        """
 
         fn = self.cache.file_path(self.package.blob_id)
         size = os.stat(fn).st_size
 
-        f = open(fn)
-        m = md5.new(f.read())
-        digest = m.hexdigest()
-        f.close()
+        file = hashfile.open(fn)
+        hash_md5 = hashlib.md5()
+        hash_sha1 = hashlib.sha1()
+        hash_sha256 = hashlib.sha256()
+        hash_sha512 = hashlib.sha512()
+        file.add_hash(hash_md5)
+        file.add_hash(hash_sha1)
+        file.add_hash(hash_sha256)
+        file.add_hash(hash_sha512)
+        file_data = file.read()
+        file.close()
 
-        return (size, digest)
+        return (size, hash_md5.hexdigest(), hash_sha1.hexdigest(), \
+                   hash_sha256.hexdigest(), hash_sha512.hexdigest())
 
     def get_source_file_line(self, blob_id, filename):
         """Return a line appropriate for a single Sources 'Files:' entry.
@@ -248,7 +259,9 @@ class DebianPoolInjector(object):
             apt_fields[predicate] = value
 
         pool_path_dir = self.get_relative_pool_path()
-        (size, md5_digest) = self.get_file_size_and_hash()
+        (size, md5_digest, sha1_digest, sha256_digest, sha512_digest) \
+            = self.get_file_size_and_hash()
+
         if self.package.role == 'binary':
             field_cmp = deb_binary_field_cmp
             pool_path = os.path.join(pool_path_dir, self.package.filename)
@@ -263,7 +276,12 @@ class DebianPoolInjector(object):
 
             apt_fields["Size"] = str(size)
             apt_fields["Filename"] = pool_path
-            apt_fields["MD5Sum"] = md5_digest
+            apt_fields["MD5sum"] = md5_digest
+            apt_fields["SHA1"] = sha1_digest
+            apt_fields["SHA256"] = sha256_digest
+            # not required, yet
+            #apt_fields["SHA512"] = sha512_digest
+
             if  hasattr(self.package.pdk, 'task'):
                 apt_fields["Task"] = self.package.pdk.task
 
