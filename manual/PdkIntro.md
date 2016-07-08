@@ -56,7 +56,7 @@ Packages are collected in a separate file store (a simple "look-aside cache" wit
 
 *Basic Version Control Operations*
 
-Basic commands like `add`, `revert`, `commit`, etc. that are familiar to CVS and SVN users are available. 
+Basic commands like `add`, `revert`, `commit`, etc. that are familiar to git users are available. 
 
 *Distributed Version Control (DVC) Operations*
 
