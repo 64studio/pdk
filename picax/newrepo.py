@@ -26,8 +26,7 @@ objects from picax.package to create new repositories."""
 import os
 import re
 import hashfile
-import md5
-import sha
+import hashlib
 import gzip
 
 import picax.config
@@ -72,15 +71,20 @@ class NewRepository:
 
             if os.path.exists(release_fn):
                 release_file = hashfile.open(release_fn)
-                release_md5 = md5.new()
-                release_sha = sha.new()
+                release_md5 = hashlib.md5()
+                release_sha1 = hashlib.sha1()
+                release_sha256 = hashlib.sha256()
+                release_sha512 = hashlib.sha512()
                 release_file.add_hash(release_md5)
-                release_file.add_hash(release_sha)
+                release_file.add_hash(release_sha1)
+                release_file.add_hash(release_sha256)
+                release_file.add_hash(release_sha512)
                 release_data = release_file.read()
                 release_file.close()
 
                 self.release_info[release_key] = \
-                    (release_md5, release_sha, release_data)
+                    (release_md5, release_sha1, release_sha256, \
+                    release_sha512, release_data)
 
     def _write_packages(self):
         "Link packages to the target, and write indexes."
@@ -106,8 +110,9 @@ class NewRepository:
 
                 if self.release_info.has_key(distro_key):
                     for release_path in (dist_path, src_dist_path):
-                        (release_md5, release_sha, release_data) = \
-                            self.release_info[distro_key]
+                        (release_md5, release_sha1, \
+                            release_sha256, release_sha512, \
+                            release_data) = self.release_info[distro_key]
                         release_fn = "%s/Release" % (release_path,)
                         release_file = open(
                             self.dest_path + "/" + release_fn, "w")
@@ -115,28 +120,40 @@ class NewRepository:
                         release_file.close()
 
                         self.index_paths[distro_key].append(release_fn)
-                        hashes[release_fn] = (release_md5, release_sha)
+                        hashes[release_fn] = (release_md5, release_sha1, \
+                                        release_sha256, release_sha512)
 
                 pkgs_fn = dist_path + "/Packages"
                 pkgs_file = hashfile.open(self.dest_path + "/" + pkgs_fn,
                                           "w")
-                pkgs_md5 = md5.new()
-                pkgs_sha = sha.new()
+                pkgs_md5 = hashlib.md5()
+                pkgs_sha1 = hashlib.sha1()
+                pkgs_sha256 = hashlib.sha256()
+                pkgs_sha512 = hashlib.sha512()
                 pkgs_file.add_hash(pkgs_md5)
-                pkgs_file.add_hash(pkgs_sha)
+                pkgs_file.add_hash(pkgs_sha1)
+                pkgs_file.add_hash(pkgs_sha256)
+                pkgs_file.add_hash(pkgs_sha512)
 
                 srcs_fn = src_dist_path + "/Sources"
                 srcs_file = hashfile.open(self.dest_path + "/" + srcs_fn,
                                           "w")
-                srcs_md5 = md5.new()
-                srcs_sha = sha.new()
+                srcs_md5 = hashlib.md5()
+                srcs_sha1 = hashlib.sha1()
+                srcs_sha256 = hashlib.sha256()
+                srcs_sha512 = hashlib.sha512()
                 srcs_file.add_hash(srcs_md5)
-                srcs_file.add_hash(srcs_sha)
+                srcs_file.add_hash(srcs_sha1)
+                srcs_file.add_hash(srcs_sha256)
+                srcs_file.add_hash(srcs_sha512)
 
                 self.index_paths[distro_key].extend([pkgs_fn, srcs_fn])
                 index_files[distro_key] = (pkgs_file, srcs_file)
-                hashes[pkgs_fn] = (pkgs_md5, pkgs_sha)
-                hashes[srcs_fn] = (srcs_md5, srcs_sha)
+
+                hashes[pkgs_fn] = (pkgs_md5, pkgs_sha1, \
+                                      pkgs_sha256, pkgs_sha512)
+                hashes[srcs_fn] = (srcs_md5, srcs_sha1, \
+                                      srcs_sha256, srcs_sha512)
 
             else:
                 (pkgs_file, srcs_file) = index_files[distro_key]
@@ -178,10 +195,15 @@ class NewRepository:
                     gzip_fn = index_fn + ".gz"
                     gzip_hash = hashfile.open(
                         self.dest_path + "/" + gzip_fn, "w")
-                    gzip_md5 = md5.new()
-                    gzip_sha = sha.new()
+                    gzip_md5 = hashlib.md5()
+                    gzip_sha1 = hashlib.sha1()
+                    gzip_sha256 = hashlib.sha256()
+                    gzip_sha512 = hashlib.sha512()
                     gzip_hash.add_hash(gzip_md5)
-                    gzip_hash.add_hash(gzip_sha)
+                    gzip_hash.add_hash(gzip_sha1)
+                    gzip_hash.add_hash(gzip_sha256)
+                    gzip_hash.add_hash(gzip_sha512)
+
                     gzip_file = gzip.GzipFile(fn, "w", 9,
                                               gzip_hash)
 
@@ -192,7 +214,9 @@ class NewRepository:
 
                     self.index_paths[distro_key].append(gzip_fn)
                     self.index_hashes[gzip_fn] = (gzip_md5.hexdigest(),
-                                                  gzip_sha.hexdigest())
+                                              gzip_sha1.hexdigest(),
+                                              gzip_sha256.hexdigest(),
+                                              gzip_sha512.hexdigest())
             else:
                 fn_size = 0
 
@@ -234,13 +258,12 @@ class NewRepository:
 
                 release_file.write(line)
 
-                if name not in ("MD5Sum", "SHA1"):
+                hashes = ("MD5Sum", "SHA1", "SHA256", "SHA512")
+
+                if name not in hashes:
                     continue
 
-                if name == "MD5Sum":
-                    hash_index = 0
-                else:
-                    hash_index = 1
+                hash_index = hashes.index(name)
 
                 for component in components:
                     component_key = _gen_release_key(distro, component)

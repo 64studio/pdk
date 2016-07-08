@@ -1077,7 +1077,7 @@ def abstract(args):
         m = p.match(args.opts.select)
         if m:
             tag = m.groups()[0]
-            key = m.groups()[1]
+            key = m.groups()[1].split(',')
         else:
             print "error"
 
@@ -1115,16 +1115,15 @@ def abstract(args):
                     continue
 
                 if sections.find(tag):
-                    if key == "*": # Wildcard
+                    if key[0] == "*": # Wildcard
                         if ghost.name not in packages:
                             packages.append(ghost.name)
                         continue
-                    try:
-                        sections.find(tag).replace(' ','').split(',').index(key)
-                        if ghost.name not in packages:
-                            packages.append(ghost.name)
-                    except ValueError:
-                        continue
+                    for k in key:
+                        if k in sections.find(tag).replace(' ', '').split(','):
+                            if ghost.name not in packages:
+                                packages.append(ghost.name)
+
     if args.opts.packages:
         for p in args.opts.packages.split(','):
 	   packages.append(p.strip(' \t'))
@@ -1134,8 +1133,8 @@ def abstract(args):
         for p in args.opts.components.split(','):
 	   components.append(p.strip(' \t'))
 
-    if not packages and not components:
-        packages=sys.stdin.read().split("\n")
+    #if not packages and not components:
+    #    packages=sys.stdin.read().split("\n")
 
     contents=''
 
