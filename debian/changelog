@@ -1,8 +1,16 @@
 pdk (1.0.0) unstable; urgency=low
 
-   - update packaging for Debian jessie
+  [Chris Obbard]
+  * Fix for "pdk abstract" waiting for user input when no packages are passed
+    using the command line argument --packages
+  * Allow multiple selections for "pdk abstract" when passing a --select
+  * adding stronger hash functionality to APT repository Release and Package
+    file generation to satisfy needs in Debian Wheezy & Debian Jessie
 
- -- Daniel James <daniel@64studio.com>  Thu, 16 Jun 2016 16:55:01 +0100
+  [Daniel James]
+  * update packaging for Debian Jessie
+
+ -- Daniel James <daniel@64studio.com>  Fri, 8 July 2016 13:37:01 +0100
 
 pdk (0.9.9) unstable; urgency=low
 
