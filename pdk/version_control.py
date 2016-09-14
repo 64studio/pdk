@@ -649,7 +649,14 @@ class VersionControl(object):
         if not os.path.exists(remotes_dir):
             os.makedirs(remotes_dir)
         os.makedirs(self.priv_dir)
-        print >> open(self.exclude, 'w'), 'etc'
+
+        files_to_exclude = ['etc/cache', 'etc/channels',
+            'etc/tmp', 'etc/outside-world.cache', 'tmp']
+
+        os.remove(self.exclude)
+
+	for item in files_to_exclude:
+            print >> open(self.exclude, 'a'), item
 
     def assert_no_dirs(self, files):
         '''Assert that none of the given files is a directory.'''
