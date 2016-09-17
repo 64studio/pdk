@@ -399,7 +399,8 @@ class DirectorySection(object):
 
     loader_factory = LoaderFactory.create(URLCacheLoader)
 
-    def __init__(self, full_path):
+    def __init__(self, workspace_dir, full_path):
+        self.workspace_dir = workspace_dir
         self.full_path = full_path
 
     def update(self):
@@ -412,12 +413,16 @@ class DirectorySection(object):
 
         The directory is visited recursively and in a repeatable order.
         '''
+        if not self.full_path.startswith('/'):
+            self.full_path = self.workspace_dir + '/' + self.full_path
+
         for root, dirnames, files in os.walk(self.full_path,
                                              topdown = True):
             dirnames.sort()
             files.sort()
             for candidate in files:
                 full_path = pjoin(root, candidate)
+                print "Loading local file " + candidate
                 try:
                     package_type = get_package_type(filename = candidate)
                 except UnknownPackageTypeError:
@@ -538,7 +543,8 @@ class WorldData(object):
 
 class OutsideWorldFactory(object):
     """Creates an OutsideWorld object from WorldData and a channel_dir."""
-    def __init__(self, world_data, channel_dir, store_file):
+    def __init__(self, workspace_dir, world_data, channel_dir, store_file):
+        self.workspace_dir = workspace_dir
         self.world_data = world_data
         self.channel_dir = channel_dir
         self.store_file = store_file
@@ -620,7 +626,7 @@ class OutsideWorldFactory(object):
                         yield AptDebSection(full_path, channel_file,
                                             strategy, has_release, dist)
             elif type_value == 'dir':
-                yield DirectorySection(path)
+                yield DirectorySection(self.workspace_dir, path)
             elif type_value == 'source':
                 yield RemoteWorkspaceSection(path,
                                              self.get_channel_file(channel_name,path))

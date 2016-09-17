@@ -1278,8 +1278,8 @@ class _Workspace(object):
 
     def __create_world(self):
         """Get the outside world object for this workspace."""
-        factory = OutsideWorldFactory(self.world_data, self.channel_dir,
-                                      self.outside_world_store)
+        factory = OutsideWorldFactory(self.location, self.world_data,
+                                      self.channel_dir, self.outside_world_store)
         world = factory.create()
         return world
     world = cached_property('world', __create_world)
