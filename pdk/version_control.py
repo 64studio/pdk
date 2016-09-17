@@ -350,11 +350,11 @@ class Git(object):
 
         Yields filename.
         '''
-        cmd = 'git ls-files -z -o --directory --exclude-from=%s --exclude-from=%s' \
-              % (self.global_exclude_file, self.local_exclude_file)
+        cmd = 'git ls-files -z -o --directory --exclude-from=%s' \
+              % self.global_exclude_file
         
-        #if os.path.isfile(self.local_exclude_file):
-        #    cmd += " --exclude-from=%s" % self.local_exclude_file
+        if self.local_exclude_file != "" and os.path.isfile(self.local_exclude_file):
+            cmd += " --exclude-from=%s" % self.local_exclude_file
 
         remote_in, remote_out, waiter = self.popen2(cmd)
         remote_in.close()
