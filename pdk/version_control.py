@@ -185,18 +185,22 @@ class Git(object):
 
     priv_dir is a directory in the git db where we can put private data.
 
-    exclude_file is a file in the git db which contains patterns git should
-        ignore.
+    global_exclude_file is a file in the git db which contains patterns git
+        should ignore.
+
+    local_exclude_file is a file in the workspace which contains patterns
+        git should ignore. This can be an empty string or a non-file.
 
     index_file is where the git index file is kept. If it is set to
         None, the default git index file is used.
     '''
     def __init__(self, work_dir, git_dir, priv_dir,
-                 exclude_file, index_file):
+                 global_exclude_file, local_exclude_file, index_file):
         self.work_dir = work_dir
         self.git_dir = git_dir
         self.priv_dir = priv_dir
-        self.exclude_file = exclude_file
+        self.global_exclude_file = global_exclude_file
+        self.local_exclude_file = local_exclude_file
         self.index_file = index_file
 
     def popen2(self, command, pipes = True):
@@ -346,8 +350,12 @@ class Git(object):
 
         Yields filename.
         '''
-        cmd = 'git ls-files -z -o --directory --exclude-from=%s' \
-              % self.exclude_file
+        cmd = 'git ls-files -z -o --directory --exclude-from=%s --exclude-from=%s' \
+              % (self.global_exclude_file, self.local_exclude_file)
+        
+        #if os.path.isfile(self.local_exclude_file):
+        #    cmd += " --exclude-from=%s" % self.local_exclude_file
+
         remote_in, remote_out, waiter = self.popen2(cmd)
         remote_in.close()
         for filename in NullTerminated(remote_out):
@@ -629,11 +637,12 @@ class VersionControl(object):
         self.priv_dir = pjoin(git_path, 'pdk')
         self.add_remove_file = pjoin(self.priv_dir, 'add-remove')
         self.alt_index = pjoin(self.priv_dir, 'pdk-index')
-        self.exclude = pjoin(git_path, 'info', 'exclude')
+        self.global_exclude = pjoin(git_path, 'info', 'exclude')
+        self.local_exclude = pjoin(work_path, '.gitignore')
         self.git = Git(self.work_dir, self.vc_dir, self.priv_dir,
-                       self.exclude, None)
+                       self.global_exclude, self.local_exclude, None)
         self.alt_git = Git(self.work_dir, self.vc_dir, self.priv_dir,
-                           self.exclude, self.alt_index)
+                           self.global_exclude, self.local_exclude, self.alt_index)
 
 
     def get_add_remove(self):
@@ -653,10 +662,10 @@ class VersionControl(object):
         files_to_exclude = ['etc/cache', 'etc/channels',
             'etc/tmp', 'etc/outside-world.cache', 'tmp']
 
-        os.remove(self.exclude)
+        os.remove(self.global_exclude)
 
 	for item in files_to_exclude:
-            print >> open(self.exclude, 'a'), item
+            print >> open(self.global_exclude, 'a'), item
 
     def assert_no_dirs(self, files):
         '''Assert that none of the given files is a directory.'''
