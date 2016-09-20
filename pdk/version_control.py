@@ -619,6 +619,10 @@ class Git(object):
         '''Get the contents of a commit as a string.'''
         return self.shell_to_string('git cat-file commit %s' % commit_id)
 
+    def get_log(self):
+        '''Get a simplified log of the final tree.'''
+        return self.shell_to_string('git log')
+
     def get_blob(self, blob_id):
         '''Get a wrapped filehandle of a blob.'''
         command = 'git cat-file blob %s' % mkarg(blob_id)
@@ -877,9 +881,10 @@ class VersionControl(object):
             message = 'Log not available on new workspaces. ' + \
                       'Commit something first.'
             raise InputError(message)
-        revs = self.git.get_rev_list(['HEAD'], limits)
-        for rev in revs:
-            print self.git.get_commit(rev)
+        #revs = self.git.get_rev_list(['HEAD'], limits)
+        #for rev in revs:
+        #    print self.git.get_commit(rev)
+        print self.git.get_log()
 
     def cat(self, filename, revision = 'HEAD'):
         '''Get the historical version of the given filename.
