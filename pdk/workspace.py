@@ -1640,8 +1640,10 @@ class Conveyor(object):
             self.push = None
         else:
             # warning: these do not _seem_ to work. See issue #24
-            self.pull = self._framer_pull_strategy
-            self.push = self._framer_push_strategy
+            #self.pull = self._framer_pull_strategy
+            #self.push = self._framer_push_strategy
+            self.pull = None
+            self.push = None
 
     def _get_framer(self):
         '''Get a framer suitable for communicating with this workspace.'''
