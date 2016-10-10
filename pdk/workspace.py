@@ -1634,7 +1634,12 @@ class Conveyor(object):
         if parts[0] in ('http', 'https'):
             self.pull = self._anon_http_pull_strategy
             self.push = None
+        elif parts[0] == 'file':
+            # seems like we can use the same method as http.
+            self.pull = self._anon_http_pull_strategy
+            self.push = None
         else:
+            # warning: these do not _seem_ to work. See issue #24
             self.pull = self._framer_pull_strategy
             self.push = self._framer_push_strategy
 
