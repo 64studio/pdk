@@ -9,7 +9,7 @@ PDK is made available to the software development community through the GitHub r
 
 PDK is written in Python, the source code is well commented and contains documented examples. It is released under the GNU GPL, version 2.
 
-If you are interested in PDK development, and would like write access to the PDK wiki or bug tickets, please [contact us](http://www.64studio.com/contact) at 64 Studio.
+If you are interested in PDK development, and would like write access to the PDK wiki or bug tickets, please contact us via GitHub issues or email daniel at 64studio dot com.
 
 *Documentation*
 
