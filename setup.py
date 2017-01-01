@@ -33,6 +33,7 @@ setup(name="pdk",
                 "pdk.xml_legacy.utils", "pdk.xml_legacy.sax",
                 "pdk.xml_legacy.sax.drivers", "pdk.xml_legacy.sax.drivers2",
                 "picax", "picax.modules",
+                "mediagen", "mediagen.modules",
                 "pdk.test", "picax.test", "smart.channels"],
       py_modules=["hashfile"])
 

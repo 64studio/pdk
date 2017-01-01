@@ -387,6 +387,31 @@ Generate media for a linux product.
 
 mediagen = make_invokable(mediagen, 'arch', 'label', 'output-dest')
 
+
+def imggen(args):
+    """\\fB%prog\\fP \\fICOMPONENT\\fP
+.PP
+Generate a pre-instaled Linux image.
+    """
+
+    import mediagen.config
+    import mediagen.output
+
+    ws = current_workspace()
+    product_file = args.get_one_reoriented_file(ws)
+    desc = ws.get_component_descriptor(product_file)
+    comp = desc.load(ws.cache)
+
+    # handle the arguments first
+    mediagen.config.handle_meta(comp.meta)
+    mediagen.config.handle_args(args)
+
+    # create the output
+    mediagen.output.create()
+
+
+imggen = make_invokable(imggen, 'output-dest')
+
 def add(args):
     """\\fB%prog\\fP \\fIFILES\\fP
 .PP
