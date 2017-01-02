@@ -20,6 +20,12 @@ def handle_args(args):
         if value != None:
             config[key] = value
 
+def set_location(path):
+    config["pdk_ws_location"] = path
+
+def get_full_path(filename):
+    return config["pdk_ws_location"] + "/" + filename
+
 def get(key):
     if key in config:
         return config[key]

@@ -406,6 +406,9 @@ Generate a pre-instaled Linux image.
     mediagen.config.handle_meta(comp.meta)
     mediagen.config.handle_args(args)
 
+    # tell mediagen the workspace location
+    mediagen.config.set_location(ws.location)
+
     # create the output
     mediagen.output.create()
 

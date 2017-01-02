@@ -4,17 +4,19 @@ Something.
 """
 
 import mediagen.config
+import mediagen.logging
 import mediagen.modload
 
 def create():
-    # load module
-    module = None
+    # load output script
+    output_script_name = mediagen.config.get("output-type")
+
+    output_script = None
     try:
-        module_name = mediagen.config.get("module")
-        module = mediagen.modload.load_module(module_name)
+        output_script = mediagen.modload.load_output_script(output_script_name)
     except ImportError:
-        print "ERROR: cannot find module " + module_name
+        mediagen.logging.error("cannot find output script ", output_script_name)
         return
 
-    # test
-    module.test()
+    # create
+    output_script.create()

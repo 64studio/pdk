@@ -1,8 +1,7 @@
-# $Progeny$
 #
 # Code for loading modules.
 #
-#   Copyright 2003, 2004, 2005 Progeny Linux Systems, Inc.
+#   Copyright 2017 Chris Obbard <chris@64studio.com>
 #
 #   This file is part of PDK.
 #
@@ -21,35 +20,16 @@
 #   Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 """This module does the heavy lifting of importing external modules for
-the installer and media subsystems."""
+the output creation subsystems."""
 
+import importlib
 import sys
 
-def load_module(name, module_dir = None):
-    """Load the named module, optionally adding a module directory to the
-    path."""
+def load_output_script(class_name):
+    return load_module(class_name, "mediagen.outputs")
 
-    if module_dir:
-        sys.path.append(module_dir)
-
-    inst_toplevel = None
-    for parent_module in ["mediagen.modules"]:
-        try:
-            full_name = parent_module + "." + name
-            inst_toplevel = __import__(full_name)
-            break
-        except ImportError:
-            continue
-
-    if not inst_toplevel:
-        raise ImportError, "could not find module for %s" % (name,)
-
-    if hasattr(inst_toplevel, name):
-        inst = getattr(inst_toplevel, name)
-    elif hasattr(inst_toplevel, "modules") and \
-         hasattr(inst_toplevel.modules, name):
-        inst = getattr(inst_toplevel.modules, name)
-    else:
-        raise ImportError, "cannot find modules for %s" % (name,)
-
-    return inst
+def load_module(name, module_name):
+    """Load a module."""
+    full_name = module_name + "." + name
+    module = importlib.import_module(full_name)
+    return module
