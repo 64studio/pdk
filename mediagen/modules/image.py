@@ -12,11 +12,20 @@ class Image:
 
     def create(self, size):
         stdout, stderr = mediagen.system.run_command("dd if=/dev/zero of=" + self.filename + " bs=1MB count=" + size)
+        return True
 
     def mount_device(self):
         # mount
-        pass
+        stdout, stderr = mediagen.system.run_command("losetup -f --show " + self.filename)
+        device = stdout.rstrip()
+        if not device.startswith("/dev/loop"):
+            mediagen.logging.error("could not mount loop! mounted as: " + device)
+            return False
+
+        self.device = device
+        return True
 
     def unmount_device(self):
         # unmount
+        stdout, stderr = mediagen.system.run_command("losetup -d " + self.device)
         pass

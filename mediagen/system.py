@@ -16,3 +16,7 @@ def run_command(args_raw):
     stdout, stderr = process.communicate()
 
     return stdout, stderr
+
+def mkdir(name):
+    if not os.path.isdir(name):
+        os.makedirs(name)
