@@ -26,7 +26,7 @@ class fdisk:
 
         if part_type == "linux":
             pass
-        if part_type == "fat":
+        if part_type == "vfat":
             self.write_stdin("t")
             self.write_stdin("c")
 

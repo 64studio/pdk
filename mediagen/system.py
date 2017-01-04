@@ -1,5 +1,6 @@
 import os
 import shlex
+import shutil
 import subprocess
 import time
 
@@ -17,6 +18,16 @@ def run_command(args_raw):
 
     return stdout, stderr
 
+def rmdir(name):
+    if os.path.isdir(name):
+        shutil.rmtree(name)
+
 def mkdir(name):
     if not os.path.isdir(name):
         os.makedirs(name)
+
+def cp(src, dst):
+    shutil.copy(src, dst)
+
+def sleep(millis):
+    time.sleep(millis / 1000)

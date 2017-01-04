@@ -394,6 +394,10 @@ def imggen(args):
 Generate a pre-instaled Linux image.
     """
 
+    if os.getuid() != 0:
+        print "This command requires root privileges. Run as root using 'sudo'."
+        sys.exit()
+
     import mediagen.config
     import mediagen.output
 
