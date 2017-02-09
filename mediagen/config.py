@@ -24,6 +24,8 @@ def set_location(path):
     config["pdk_ws_location"] = path
 
 def full_path(filename):
+    if filename == "":
+        return ""
     return config["pdk_ws_location"] + "/" + filename
 
 def get(key):
