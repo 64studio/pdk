@@ -18,6 +18,11 @@ def run_command(args_raw):
 
     return stdout, stderr
 
+def chroot(fs, command):
+    stdout, stderr = run_command("/usr/sbin/chroot " + fs + " " + command)
+
+    return stdout, stderr
+
 def rmdir(name):
     if os.path.isdir(name):
         shutil.rmtree(name)
