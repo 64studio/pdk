@@ -146,9 +146,7 @@ class RaspberryPi:
         if not self.postinst == "" and mediagen.system.isfile(self.postinst):
             print "Running postinst"
             mediagen.system.cp(self.postinst, pdktmp + "postinst.sh")
-            mediagen.system.run_command("chmod 777 /tmp/pdk/postinst.sh")
-            mediagen.system.run_command("chown root:root /tmp/pdk/postinst.sh")
-            stdout, stderr = mediagen.system.chroot(self.rootfs, "/tmp/pdk/postinst.sh")
+            stdout, stderr = mediagen.system.chroot(self.rootfs, "/bin/sh /tmp/pdk/postinst.sh")
             print "postinst out: ", stdout
             print "postinst err: ", stderr
 
