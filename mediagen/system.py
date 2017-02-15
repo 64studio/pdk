@@ -1,4 +1,5 @@
 import os
+import os.path
 import shlex
 import shutil
 import subprocess
@@ -31,8 +32,17 @@ def mkdir(name):
     if not os.path.isdir(name):
         os.makedirs(name)
 
-def cp(src, dst):
-    shutil.copy(src, dst)
+def cp(src, dest):
+    shutil.copy(src, dest)
+
+def mount_bind(src, dest):
+    stdout, stderr = run_command("mount --bind " + src + " " + dest)
+
+def umount(dest):
+    stdout, stderr = run_command("umount " + dest)
+
+def isfile(dest):
+    return os.path.isfile(dest)
 
 def sleep(millis):
     time.sleep(millis / 1000)
