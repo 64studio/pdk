@@ -565,8 +565,10 @@ class ComponentDescriptor(object):
         from pdk.workspace import inherit
         if inherit:
             for key, val in [((k[0],k[1]),k[2]) for k in self.meta]:
-                if key == ('pdk','task'):
-                    predicates.append((key[0],key[1],val))
+                if key == ('pdk', 'task'):
+                    predicates.append((key[0], key[1], val))
+                if key == ('pdk', 'priority'):
+                    predicates.append((key[0], key[1], val))
 
         ref = PackageStanza(package_type, blob_id, condition, predicates)
         ref.children = inner_refs

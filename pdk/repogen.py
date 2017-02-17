@@ -282,8 +282,11 @@ class DebianPoolInjector(object):
             # not required, yet
             #apt_fields["SHA512"] = sha512_digest
 
-            if  hasattr(self.package.pdk, 'task'):
+            # override the following fields from the component meta
+            if hasattr(self.package.pdk, 'task'):
                 apt_fields["Task"] = self.package.pdk.task
+            if hasattr(self.package.pdk, 'priority'):
+                apt_fields["Priority"] = self.package.pdk.priority
 
         else:
             field_cmp = deb_source_field_cmp
