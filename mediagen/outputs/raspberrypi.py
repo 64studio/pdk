@@ -35,7 +35,7 @@ class RaspberryPi:
         self.output_dir = os.path.dirname(self.output_dest)
         self.bootsize = mediagen.config.get("raspberrypi.boot-size")
         self.repo = mediagen.config.get_path("repo")
-        self.assets = mediagen.config.get_path("assets")
+        self.assets = mediagen.config.get("assets")
         self.release = mediagen.config.get("release")
         self.arch = mediagen.config.get("arch")
 
@@ -111,9 +111,12 @@ class RaspberryPi:
 
         # mount the assets folder into the rootfs
         if not self.assets == "":
-            assets = pdktmp + "assets"
-            mediagen.system.mkdir(assets)
-            mediagen.system.mount_bind(self.assets, assets)
+            for asset in self.assets.split(","):
+                asset_local_path = mediagen.config.full_path(asset)
+                if not asset_local_path == "":
+                    assets = pdktmp + "assets/" + asset
+                    mediagen.system.mkdir(assets)
+                    mediagen.system.mount_bind(asset_local_path, assets)
 
 
         # preseed file
@@ -158,9 +161,11 @@ class RaspberryPi:
 
         # remove the assets mount
         if not self.assets == "":
-            mediagen.system.umount(assets)
-            mediagen.system.rmdir(assets)
-
+            for asset in self.assets.split(","):
+                if not asset == "":
+                    asset_path = pdktmp + "assets/" + asset
+                    mediagen.system.umount(asset_path)
+                    mediagen.system.rmdir(asset_path)
 
     def cleanup(self):
         """Cleans up afterwards.
