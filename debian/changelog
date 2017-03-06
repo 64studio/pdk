@@ -1,16 +1,23 @@
-pdk (1.0.0) unstable; urgency=low
+pdk (1.0.0~alpha1) unstable; urgency=low
+  * [debian]
+    - update packaging in line with Jessie
+    - set myself as maintainer
+  * [vc]
+    - keep track of etc/channels.xml file
+    - use local ignore files, if present
+    - change format of log command to be more useful
+    - allow pulling from local projects
+    - disable framing pulling/pushing as it is broken
+  * [pdk]
+    - allow referencing deb files inside workspace
+    - allow overriding package priority from meta
+    - fix abstract command crashing when no packages are passed
+    - allow multiple selections for abstact command
+    - add stronger hashing to apt repo generation in wheezy
+  * [mediagen]
+    - initial commits of next-gen media generator command
 
-  [Chris Obbard]
-  * Fix for "pdk abstract" waiting for user input when no packages are passed
-    using the command line argument --packages
-  * Allow multiple selections for "pdk abstract" when passing a --select
-  * adding stronger hash functionality to APT repository Release and Package
-    file generation to satisfy needs in Debian Wheezy & Debian Jessie
-
-  [Daniel James]
-  * update packaging for Debian Jessie
-
- -- Daniel James <daniel@64studio.com>  Fri, 8 July 2016 13:37:01 +0100
+ -- Chris Obbard <chris@64studio.com>  Mon, 06 Mar 2017 21:06:52 +0000
 
 pdk (0.9.9) unstable; urgency=low
 
