@@ -1,4 +1,4 @@
-This document assumes that you've already installed PDK and have a workspace to work in. One way to reach that state is to follow the steps in [Workspace Setup](GettingStarted.md).
+This document assumes that you've already installed PDK and have a workspace to work in. One way to reach that state is to follow the steps in [Getting Started](GettingStarted.md).
 
 Don't miss the page about component maintenance, as it is going to be a bigger part of your world after you put together your initial components. The link is at the bottom of this page. 
 
