@@ -483,7 +483,10 @@ class DebianPoolRepo(object):
                 writer.write(handle, section, arch)
         release_path = pjoin(self.repo_dir, self.dist, 'Release')
         writer.write_outer(LazyWriter(release_path))
-        writer.sign_outer(LazyWriter(release_path + '.gpg')) 
+        writer.sign_outer(LazyWriter(release_path + '.gpg'))
+        keyring_path = pjoin(self.repo_dir, self.dist, 'archive-keyring')
+        writer.copy_public_key(LazyWriter(keyring_path + '.pub'),
+                LazyWriter(keyring_path + '.gpg'))
 
 
 class DebianDirectPoolRepo(DebianPoolRepo):
@@ -633,6 +636,19 @@ class DebianReleaseWriter(object):
                               % (str(self.key), handle.name[0:-4]))
         sign = sign_handle.read()
         handle.write(sign)
+
+    def copy_public_key(self, handle_pub, handle_gpg):
+        """Copy public key into archive."""
+        if not self.key:
+            return
+        sign_handle = os.popen('gpg --armor --export %s -o -'
+                              % (str(self.key)))
+        sign = sign_handle.read()
+        handle_pub.write(sign)
+        sign_handle = os.popen('gpg --export %s -o -'
+                              % (str(self.key)))
+        sign = sign_handle.read()
+        handle_gpg.write(sign)
 
 def get_apt_component_name(ref):
     """Extract an apt-component name from a component reference"""
