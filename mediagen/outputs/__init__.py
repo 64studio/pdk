@@ -1,1 +1,0 @@
-"base for mediagen.outputs"
