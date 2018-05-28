@@ -347,6 +347,33 @@ Generate media for a linux product.
     product_file = args.get_one_reoriented_file(ws)
     desc = ws.get_component_descriptor(product_file)
     comp = desc.load(ws.cache)
+
+    mediagen_type = ''
+    try:
+        mediagen_type = comp.meta[('mediagen', 'media')]
+    except:
+        print 'please add a mediagen.media stanza to your component file.'
+        return
+
+    if mediagen_type == 'img':
+        mediagen_script = '/usr/share/pdk-mediagen/mediagen'
+        if os.environ.get('MEDIAGEN_PATH') is not None:
+            mediagen_script = str(os.environ.get('MEDIAGEN_PATH'))
+
+        if not os.path.isfile(mediagen_script):
+            print 'you must install pdk-mediagen before running this command'
+            return
+
+        # build mediagen shell command
+        mediagen_arg1 = ws.location     # the location of the workspace
+        mediagen_arg2 = desc.filename   # the component filename (& subdirs)
+        mediagen_cmd = mediagen_script + ' "' + mediagen_arg1 + '" "' + mediagen_arg2 + '"'
+
+        # run mediagen shell command
+        import subprocess
+        return_val = subprocess.call(mediagen_cmd, shell=True)
+        return
+
     picax.config.handle_args(component = comp)
     picax_conf = picax.config.get_config()
 
