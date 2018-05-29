@@ -485,7 +485,7 @@ class DebianPoolRepo(object):
         writer.write_outer(LazyWriter(release_path))
         writer.sign_outer(LazyWriter(release_path + '.gpg'))
         keyring_path = pjoin(self.repo_dir, self.dist, 'archive-keyring')
-        writer.copy_public_key(LazyWriter(keyring_path + '.pub'),
+        writer.copy_public_key(LazyWriter(keyring_path + '.asc'),
                 LazyWriter(keyring_path + '.gpg'))
 
 
