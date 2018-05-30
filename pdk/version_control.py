@@ -594,8 +594,8 @@ class Git(object):
 
     def merge(self, dest_head, source_head, silent):
         '''Invoke git merge.'''
-        command = 'git merge -n "Merge" %s %s' \
-                  % (mkarg(dest_head), mkarg(source_head))
+        command = 'git merge --no-edit --allow-unrelated-histories --no-stat -m "Merge channel \'%s\'" %s %s' \
+                  % (source_head, mkarg(dest_head), mkarg(source_head))
         command = self.silence(command, silent)
         wait = self.popen2(command, False)
         wait()
