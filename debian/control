@@ -9,7 +9,7 @@ Homepage: https://github.com/64studio/pdk/
 
 Package: pdk
 Architecture: all
-Depends: ${misc:Depends}, python (<< 2.8), python (>= 2.7), git-core (>= 1.3), python-apt, python-pycurl, smartpm-core (= 1.4-2.1~pdk), python-egenix-mxtexttools, genisoimage, rpm
+Depends: ${misc:Depends}, python (<< 2.8), python (>= 2.7), git, python-apt, python-pycurl, smartpm-core (= 1.4-2.1~pdk), python-egenix-mxtexttools, genisoimage, rpm
 Conflicts: picax
 Replaces: picax
 Provides: picax
