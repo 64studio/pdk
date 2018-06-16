@@ -31,7 +31,8 @@ from itertools import chain
 from sets import Set
 from pdk.util import write_pretty_xml, parse_xml, parse_domain, \
      string_domain
-from xml.etree.cElementTree import ElementTree, Element, SubElement
+from xml.etree.cElementTree import Comment, ElementTree, Element, \
+     SubElement
 from pdk.rules import Rule, RuleSystem, CompositeAction, make_comparable
 from pdk import rules
 from pdk.package import get_package_type, Package
@@ -459,6 +460,10 @@ class ComponentDescriptor(object):
         links = []
         unlinks = []
         for element in meta_element:
+            # do not try to parse comments in meta
+            if element.tag == Comment:
+                continue
+
             domain, name = parse_domain(element.tag)
             if (domain, name) == ('pdk', 'link'):
                 links.extend(self.build_links(element))
