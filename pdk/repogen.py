@@ -633,7 +633,7 @@ class DebianReleaseWriter(object):
         """Sign the toplevel Release file."""
         if not self.key:
             return
-        sign_handle = os.popen('gpg --default-key %s --sign -ba -o - %s'
+        sign_handle = os.popen('gpg --default-key %s --sign -ba -o - %s > /dev/null 2>&1'
                               % (str(self.key), handle.name[0:-4]))
         sign = sign_handle.read()
         handle.write(sign)
