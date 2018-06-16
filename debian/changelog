@@ -1,4 +1,25 @@
+pdk (1.0.0~alpha2) unstable; urgency=low
+
+  * [debian]
+    - add Daniel James <daniel@64studio.com> as uploader
+    - replace git-core dependency with git in line with Debian Buster
+    - add gnupg dependency
+
+  * [pdk]
+    - repogen: only generate repository if GPG private key exists
+    - repogen: export GPG public key and keyring into repository
+    - repogen: hide output from gpg when signing
+    - mediagen: refactor command to call command in package pdk-mediagen
+    - pull: use correct merge command
+    - components: allow comments inside meta tag
+
+  * [mediagen]
+    - moved mediagen into its own package: pdk-mediagen
+
+ -- Christopher Obbard <chris@64studio.com>  Sat, 16 Jun 2018 16:01:26 +0100
+
 pdk (1.0.0~alpha1) unstable; urgency=low
+  
   * [debian]
     - update packaging in line with Jessie
     - set myself as maintainer
@@ -17,7 +38,7 @@ pdk (1.0.0~alpha1) unstable; urgency=low
   * [mediagen]
     - initial commits of next-gen media generator command
 
- -- Chris Obbard <chris@64studio.com>  Mon, 06 Mar 2017 21:06:52 +0000
+ -- Christopher Obbard <chris@64studio.com>  Mon, 06 Mar 2017 21:06:52 +0000
 
 pdk (0.9.9) unstable; urgency=low
 
