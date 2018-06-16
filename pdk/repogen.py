@@ -25,6 +25,7 @@ Generate a repository from component & cache
 """
 import os
 import os.path
+import subprocess
 from time import strftime, gmtime
 import re
 import hashfile
@@ -692,6 +693,16 @@ class Compiler:
                      ('apt-deb', 'split-apt-components'): '',
                      ('apt-deb', 'key'): None}
         contents.update(provided_contents)
+
+        # check the apt-deb.key exists and has a valid key
+        key = contents['apt-deb', 'key']
+        if key:
+            key_status = subprocess.call('gpg --list-keys %s > /dev/null 2>&1' % \
+                (key), shell=True)
+        if not key or key_status != 0:
+            raise InputError, 'Cannot find gpg key, please set ' + \
+                '\'apt-deb.key\' in the meta of the component ' + \
+                'file and ensure key exists with \'gpg --list-keys\'.'
 
         suite = contents['apt-deb', 'suite']
         if contents['apt-deb', 'split-apt-components']:
