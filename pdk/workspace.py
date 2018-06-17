@@ -729,6 +729,37 @@ Prints all component metadata to standard out.
 
 dumpmeta = make_invokable(dumpmeta)
 
+def listmeta(args):
+    """\\fB%prog\\fP \\fICOMPONENT\\fP
+.PP
+Lists the meta defined in the component.
+    """
+    ws = current_workspace()
+    product_file = args.get_one_reoriented_file(ws)
+    comp_desc = ws.get_component_descriptor(product_file)
+    if comp_desc.meta:
+        for item in comp_desc.meta:
+            if len(item) == 3:
+                print item[0] + '.' + item[1] + '|' + item[2]
+            else:
+                print '|'.join(item)
+
+listmeta = make_invokable(listmeta)
+
+def listcomps(args):
+    """\\fB%prog\\fP \\fICOMPONENT\\fP
+.PP
+Lists the components referenced by a component.
+    """
+    ws = current_workspace()
+    product_file = args.get_one_reoriented_file(ws)
+    comp_desc = ws.get_component_descriptor(product_file)
+    comp = comp_desc.load(ws.cache)
+    for item in comp.iter_components():
+        print str(item.ref)[:-4]
+
+listcomps = make_invokable(listcomps)
+
 def purge(args):
     """\\fB%prog\\fP \\fICOMPONENTS\\fP
 .PP
