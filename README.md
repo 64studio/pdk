@@ -13,6 +13,9 @@ If you are interested in PDK development, and would like write access to the PDK
 
 *Documentation*
 
+We are in the process of updating the documentation.
+Please submit pull requests or issues if you want to help!
+
 [PDK Introduction](manual/PdkIntro.md)
 
 [How to build a GNU/Linux distro with PDK](manual/HowTo.md)
