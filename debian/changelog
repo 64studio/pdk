@@ -1,3 +1,11 @@
+pdk (1.0.0~alpha3) unstable; urgency=low
+
+  * [pdk]
+    - listmeta, listcomps: add new commands for pdk-mediagen
+    - repogen: hide output of gpgv correctly
+
+ -- Christopher Obbard <chris@64studio.com>  Tue, 26 Jun 2018 19:48:43 +0100
+
 pdk (1.0.0~alpha2) unstable; urgency=low
 
   * [debian]
