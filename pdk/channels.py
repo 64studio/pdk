@@ -422,7 +422,6 @@ class DirectorySection(object):
             files.sort()
             for candidate in files:
                 full_path = pjoin(root, candidate)
-                print "Loading local file " + candidate
                 try:
                     package_type = get_package_type(filename = candidate)
                 except UnknownPackageTypeError:
