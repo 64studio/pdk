@@ -1,7 +1,9 @@
 # Installation
 
-First of all you can install the `pdk` package for Debian which can be built from the sources in https://github.com/64studio/pdk/tree/master/ For other distros, please run the tools from the checked-out git repository.
-	
+First of all you can install the `pdk` package for Debian which can be built from the sources in https://github.com/64studio/pdk/tree/master/ For other distros, please run the tools from the checked-out PDK git repository.
+
+For test binary packages for Debian 9 'stretch' please see the git repository https://github.com/64studio/pdk-packages
+
 # Create a new workspace
 
 Now you are ready to create a PDK workspace:
