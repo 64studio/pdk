@@ -1,8 +1,13 @@
 # Installation
 
-First of all you can install the `pdk` package for Debian which can be built from the sources in https://github.com/64studio/pdk/tree/master/ or installed from the https://apt.64studio.net repository. For other distros, please run the tools from the checked-out PDK git repository.
+First of all you can install the `pdk` package for Debian Stretch/Buster/Sid:
 
-For test binary packages for Debian 9 'stretch' please see the git repository https://github.com/64studio/pdk-packages
+```
+echo 'deb https://apt.64studio.net stretch main' | sudo tee /etc/apt/sources.list.d/64studio.list
+wget -qO - https://apt.64studio.net/archive-keyring.asc | sudo apt-key add -
+sudo apt-get update
+sudo apt-get install pdk pdk-mediagen
+```
 
 # Create a new workspace
 
