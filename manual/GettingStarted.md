@@ -1,14 +1,3 @@
-# Installation
-
-First of all you can install the `pdk` package for Debian Stretch/Buster/Sid:
-
-```
-echo 'deb https://apt.64studio.net stretch main' | sudo tee /etc/apt/sources.list.d/64studio.list
-wget -qO - https://apt.64studio.net/archive-keyring.asc | sudo apt-key add -
-sudo apt-get update
-sudo apt-get install pdk pdk-mediagen
-```
-
 # Create a new workspace
 
 Now you are ready to create a PDK workspace:

@@ -1,5 +1,4 @@
-pdk
-===
+# PDK
 
 64 Studio Ltd. maintains the Platform Development Kit (PDK), a Free Software tool originally developed at Progeny Linux Systems for the automated creation and management of custom GNU/Linux distributions. 
 
@@ -11,10 +10,12 @@ PDK is written in Python, the source code is well commented and contains documen
 
 If you are interested in PDK development, and would like write access to the PDK wiki or bug tickets, please contact us via GitHub issues or email daniel at 64studio dot com.
 
-*Documentation*
+## Documentation
 
 We are in the process of updating the documentation.
 Please submit pull requests or issues if you want to help!
+
+[Installation](manual/Installation.md)
 
 [Getting Started](manual/GettingStarted.md)
 
