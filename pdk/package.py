@@ -350,6 +350,7 @@ class _Deb(object):
         sp_name, sp_version = None, None
 
         fields = []
+        found_blob_id = ''
         for tag, l_tag in [ (t, t.lower()) for t in tags.keys() ]:
             if l_tag == 'package':
                 name = tags[tag]
@@ -367,6 +368,8 @@ class _Deb(object):
                 dom, key, value = 'deb', 'arch', tags[tag]
             elif l_tag == 'md5sum':
                 found_blob_id = 'md5:' + tags[tag]
+            elif l_tag == 'sha256' and not found_blob_id:
+                found_blob_id = 'sha256:' + tags[tag]
             elif l_tag == 'filename':
                 dom, key, value = 'pdk', 'raw-filename', tags[tag]
             elif l_tag == 'size':

@@ -39,6 +39,7 @@ import re
 from stat import ST_INO, ST_SIZE
 import sha
 import md5
+import hashlib
 import gzip
 import pycurl
 from shutil import copy2
@@ -60,6 +61,7 @@ def calculate_checksums(file_path):
     readsize = (1024 * 16)
     md5_calc = md5.new()
     sha1_calc = sha.new()
+    sha256_calc = hashlib.sha256()
     input_file = open(file_path)
     while True:
         block = input_file.read(readsize)
@@ -67,9 +69,11 @@ def calculate_checksums(file_path):
             break
         md5_calc.update(block)
         sha1_calc.update(block)
+        sha256_calc.update(block)
     input_file.close()
     return 'sha-1:' + sha1_calc.hexdigest(), \
-           'md5:' + md5_calc.hexdigest()
+           'md5:' + md5_calc.hexdigest(), \
+           'sha256:' + sha256_calc.hexdigest()
 
 class CacheImportError(SemanticError):
     """Generic error for trouble importing to cache"""
@@ -295,7 +299,7 @@ class SimpleCache(object):
                 yield filename
 
     def get_index_file(self):
-        '''Return a the path to the blob index file.'''
+        '''Return the path to the blob index file.'''
         index_file = os.path.join(self.path, 'blob_list.gz')
         return index_file
 
@@ -303,7 +307,7 @@ class SimpleCache(object):
         """Write an index file describing the contents of the cache."""
         index_file = self.get_index_file()
         handle = gzip.open(index_file, 'w')
-        regex = re.compile('(sha-1:|md5:)[a-fA-F0-9]+$')
+        regex = re.compile('(sha-1:|md5:|sha256:)[a-fA-F0-9]+$')
         for filename in self:
             if regex.match(filename):
                 path = self.make_relative_filename(filename)
